@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kauai Hotel Price Finder</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f1923; color: #e0e0e0; min-height: 100vh; }
+  
+  .header { background: linear-gradient(135deg, #1a2a3a 0%, #0f1923 100%); padding: 2rem; text-align: center; border-bottom: 1px solid #2a3a4a; }
+  .header h1 { font-size: 1.8rem; color: #fff; margin-bottom: 0.3rem; }
+  .header p { color: #8aa; font-size: 0.95rem; }
+  
+  .controls { display: flex; gap: 1rem; justify-content: center; padding: 1.5rem; flex-wrap: wrap; align-items: center; }
+  .controls label { color: #8aa; font-size: 0.85rem; }
+  .controls select, .controls button { background: #1a2a3a; color: #e0e0e0; border: 1px solid #2a3a4a; padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.9rem; cursor: pointer; }
+  .controls select:hover, .controls button:hover { border-color: #4a9eff; }
+  .btn-primary { background: #1a5a8a !important; color: #fff !important; }
+  .btn-primary:hover { background: #2a6a9a !important; }
+  .btn-danger { background: #8a2a2a !important; color: #fff !important; font-size: 0.8rem !important; }
+  .btn-danger:hover { background: #a03030 !important; }
+  
+  .best-deal { background: linear-gradient(135deg, #1a3a2a, #0f2a1a); border: 1px solid #2a6a3a; border-radius: 10px; margin: 0 2rem 1.5rem; padding: 1.5rem; text-align: center; display: none; }
+  .best-deal h2 { color: #4ade80; font-size: 1.3rem; margin-bottom: 0.5rem; }
+  .best-deal .price { font-size: 2rem; color: #fff; font-weight: 700; }
+  .best-deal .details { color: #8aa; margin-top: 0.5rem; }
+  
+  .hotel-section { margin: 0 2rem 2rem; }
+  .hotel-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; background: #1a2a3a; border-radius: 10px 10px 0 0; border: 1px solid #2a3a4a; border-bottom: none; cursor: pointer; }
+  .hotel-header h2 { font-size: 1.2rem; color: #fff; }
+  .hotel-header .hotel-best { color: #4ade80; font-size: 0.95rem; }
+  .hotel-header .toggle { color: #4a9eff; font-size: 1.2rem; transition: transform 0.2s; }
+  .hotel-header.collapsed .toggle { transform: rotate(-90deg); }
+  
+  .hotel-body { border: 1px solid #2a3a4a; border-radius: 0 0 10px 10px; overflow: hidden; }
+  .hotel-body.hidden { display: none; }
+  
+  table { width: 100%; border-collapse: collapse; }
+  th { background: #152535; color: #8aa; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; padding: 0.7rem 1rem; text-align: left; position: sticky; top: 0; }
+  td { padding: 0.6rem 1rem; border-top: 1px solid #1a2a3a; font-size: 0.9rem; }
+  tr:hover { background: #1a2a3a; }
+  tr.cheapest { background: #1a3a2a; }
+  tr.cheapest td { color: #4ade80; }
+  
+  .price-input { background: #0f1923; border: 1px solid #2a3a4a; color: #fff; padding: 0.4rem 0.6rem; border-radius: 4px; width: 100px; font-size: 0.9rem; text-align: right; }
+  .price-input:focus { outline: none; border-color: #4a9eff; }
+  .price-input.filled { border-color: #4ade80; }
+  
+  a.search-link { color: #4a9eff; text-decoration: none; font-size: 0.85rem; }
+  a.search-link:hover { text-decoration: underline; }
+  
+  .per-night { color: #888; font-size: 0.8rem; }
+  
+  .stats { display: flex; gap: 2rem; justify-content: center; padding: 1rem; flex-wrap: wrap; }
+  .stat { text-align: center; }
+  .stat .num { font-size: 1.5rem; color: #4a9eff; font-weight: 700; }
+  .stat .label { font-size: 0.75rem; color: #888; text-transform: uppercase; }
+  
+  .instructions { text-align: center; color: #667; font-size: 0.85rem; padding: 0 2rem 1rem; }
+  
+  @media (max-width: 768px) {
+    .hotel-section { margin: 0 0.5rem 1.5rem; }
+    .best-deal { margin: 0 0.5rem 1.5rem; }
+    td, th { padding: 0.5rem; font-size: 0.8rem; }
+    .price-input { width: 80px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🌺 Kauai Hotel Price Finder</h1>
+  <p>May 15 – June 15, 2026 · Costco Travel · 6–8 Night Stays</p>
+</div>
+
+<div class="controls">
+  <div>
+    <label>Nights:</label>
+    <select id="nightsFilter">
+      <option value="all">All (6-8)</option>
+      <option value="6">6 nights</option>
+      <option value="7" selected>7 nights</option>
+      <option value="8">8 nights</option>
+    </select>
+  </div>
+  <div>
+    <label>Hotel:</label>
+    <select id="hotelFilter">
+      <option value="all">All Hotels</option>
+      <option value="koloa">Koloa Landing</option>
+      <option value="koakea">Koa Kea</option>
+      <option value="hyatt">Grand Hyatt</option>
+      <option value="hanalei">1 Hotel Hanalei Bay</option>
+    </select>
+  </div>
+  <div>
+    <label>Show:</label>
+    <select id="showFilter">
+      <option value="all">All dates</option>
+      <option value="filled">Priced only</option>
+      <option value="empty">Unpriced only</option>
+    </select>
+  </div>
+  <button class="btn-primary" onclick="exportData()">📋 Export</button>
+  <button class="btn-danger" onclick="clearAllPrices()">Clear All</button>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="num" id="statTotal">0</div><div class="label">Combinations</div></div>
+  <div class="stat"><div class="num" id="statFilled">0</div><div class="label">Priced</div></div>
+  <div class="stat"><div class="num" id="statRemaining">0</div><div class="label">Remaining</div></div>
+</div>
+
+<div class="best-deal" id="bestDeal">
+  <h2>🏆 Best Deal Overall</h2>
+  <div class="price" id="bestPrice"></div>
+  <div class="details" id="bestDetails"></div>
+</div>
+
+<div id="hotelSections"></div>
+
+<p class="instructions">Click "Search" to open Costco Travel for that date combo. Enter the total price you see. Dashboard auto-saves and highlights the best deals.</p>
+
+<script>
+const HOTELS = [
+  { id: 'koloa', name: 'Koloa Landing at Poipu', costcoSearch: 'Koloa Landing Poipu' },
+  { id: 'koakea', name: 'Koa Kea Hotel & Resort', costcoSearch: 'Koa Kea' },
+  { id: 'hyatt', name: 'Grand Hyatt Kauai', costcoSearch: 'Grand Hyatt Kauai' },
+  { id: 'hanalei', name: '1 Hotel Hanalei Bay', costcoSearch: '1 Hotel Hanalei Bay' }
+];
+
+const START = new Date(2026, 4, 15); // May 15
+const END = new Date(2026, 5, 15);   // June 15
+const NIGHTS = [6, 7, 8];
+
+function formatDate(d) {
+  return `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`;
+}
+
+function formatDateShort(d) {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  return `${days[d.getDay()]} ${months[d.getMonth()]} ${d.getDate()}`;
+}
+
+function costcoUrl(hotel, checkin, checkout) {
+  const ci = formatDate(checkin);
+  const co = formatDate(checkout);
+  return `https://www.costcotravel.com/Hotels?SearchType=1&Destination=Kauai%2C%20Hawaii&CheckInDate=${encodeURIComponent(ci)}&CheckOutDate=${encodeURIComponent(co)}&NumOfAdults=2&NumOfChildren=0`;
+}
+
+function generateDateCombos() {
+  const combos = [];
+  for (const nights of NIGHTS) {
+    let d = new Date(START);
+    while (true) {
+      const checkout = new Date(d);
+      checkout.setDate(checkout.getDate() + nights);
+      if (checkout > END) break;
+      combos.push({ checkin: new Date(d), checkout: new Date(checkout), nights });
+      d.setDate(d.getDate() + 1);
+    }
+  }
+  return combos;
+}
+
+function storageKey(hotelId, checkin, nights) {
+  return `kauai_${hotelId}_${checkin.toISOString().slice(0,10)}_${nights}`;
+}
+
+function getPrice(hotelId, checkin, nights) {
+  const val = localStorage.getItem(storageKey(hotelId, checkin, nights));
+  return val ? parseFloat(val) : null;
+}
+
+function setPrice(hotelId, checkin, nights, price) {
+  if (price === null || price === '' || isNaN(price)) {
+    localStorage.removeItem(storageKey(hotelId, checkin, nights));
+  } else {
+    localStorage.setItem(storageKey(hotelId, checkin, nights), price);
+  }
+  updateBestDeals();
+  updateStats();
+}
+
+function updateStats() {
+  const nightsFilter = document.getElementById('nightsFilter').value;
+  const hotelFilter = document.getElementById('hotelFilter').value;
+  let total = 0, filled = 0;
+  
+  const combos = generateDateCombos();
+  for (const hotel of HOTELS) {
+    if (hotelFilter !== 'all' && hotel.id !== hotelFilter) continue;
+    for (const combo of combos) {
+      if (nightsFilter !== 'all' && combo.nights !== parseInt(nightsFilter)) continue;
+      total++;
+      if (getPrice(hotel.id, combo.checkin, combo.nights) !== null) filled++;
+    }
+  }
+  
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statFilled').textContent = filled;
+  document.getElementById('statRemaining').textContent = total - filled;
+}
+
+function updateBestDeals() {
+  let overallBest = null;
+  const combos = generateDateCombos();
+  
+  // Per-hotel best
+  for (const hotel of HOTELS) {
+    let hotelBest = null;
+    for (const combo of combos) {
+      const price = getPrice(hotel.id, combo.checkin, combo.nights);
+      if (price !== null && (hotelBest === null || price < hotelBest.price)) {
+        hotelBest = { price, combo, hotel };
+      }
+    }
+    
+    const el = document.getElementById(`best-${hotel.id}`);
+    if (el) {
+      if (hotelBest) {
+        const perNight = (hotelBest.price / hotelBest.combo.nights).toFixed(0);
+        el.textContent = `Best: $${hotelBest.price.toLocaleString()} ($${perNight}/night · ${hotelBest.combo.nights}N · ${formatDateShort(hotelBest.combo.checkin)})`;
+      } else {
+        el.textContent = 'No prices yet';
+      }
+    }
+    
+    if (hotelBest && (overallBest === null || hotelBest.price < overallBest.price)) {
+      overallBest = hotelBest;
+    }
+    
+    // Highlight cheapest rows per hotel
+    const rows = document.querySelectorAll(`tr[data-hotel="${hotel.id}"]`);
+    rows.forEach(r => r.classList.remove('cheapest'));
+    if (hotelBest) {
+      const key = `${hotel.id}_${hotelBest.combo.checkin.toISOString().slice(0,10)}_${hotelBest.combo.nights}`;
+      const row = document.querySelector(`tr[data-key="${key}"]`);
+      if (row) row.classList.add('cheapest');
+    }
+  }
+  
+  const bestDealEl = document.getElementById('bestDeal');
+  if (overallBest) {
+    bestDealEl.style.display = 'block';
+    const perNight = (overallBest.price / overallBest.combo.nights).toFixed(0);
+    document.getElementById('bestPrice').textContent = `$${overallBest.price.toLocaleString()}`;
+    document.getElementById('bestDetails').textContent = 
+      `${overallBest.hotel.name} · ${overallBest.combo.nights} nights · ${formatDateShort(overallBest.combo.checkin)} → ${formatDateShort(overallBest.combo.checkout)} · $${perNight}/night`;
+  } else {
+    bestDealEl.style.display = 'none';
+  }
+}
+
+function render() {
+  const nightsFilter = document.getElementById('nightsFilter').value;
+  const hotelFilter = document.getElementById('hotelFilter').value;
+  const showFilter = document.getElementById('showFilter').value;
+  const combos = generateDateCombos();
+  const container = document.getElementById('hotelSections');
+  container.innerHTML = '';
+  
+  for (const hotel of HOTELS) {
+    if (hotelFilter !== 'all' && hotel.id !== hotelFilter) continue;
+    
+    const section = document.createElement('div');
+    section.className = 'hotel-section';
+    
+    const header = document.createElement('div');
+    header.className = 'hotel-header';
+    header.innerHTML = `
+      <h2>${hotel.name}</h2>
+      <span class="hotel-best" id="best-${hotel.id}">No prices yet</span>
+      <span class="toggle">▼</span>
+    `;
+    header.addEventListener('click', () => {
+      header.classList.toggle('collapsed');
+      body.classList.toggle('hidden');
+    });
+    
+    const body = document.createElement('div');
+    body.className = 'hotel-body';
+    
+    let tableHTML = `<table><thead><tr>
+      <th>Check-in</th><th>Check-out</th><th>Nights</th><th>Total Price</th><th>Per Night</th><th></th>
+    </tr></thead><tbody>`;
+    
+    let rowCount = 0;
+    for (const combo of combos) {
+      if (nightsFilter !== 'all' && combo.nights !== parseInt(nightsFilter)) continue;
+      
+      const price = getPrice(hotel.id, combo.checkin, combo.nights);
+      if (showFilter === 'filled' && price === null) continue;
+      if (showFilter === 'empty' && price !== null) continue;
+      
+      const key = `${hotel.id}_${combo.checkin.toISOString().slice(0,10)}_${combo.nights}`;
+      const url = costcoUrl(hotel, combo.checkin, combo.checkout);
+      const perNight = price ? `$${(price/combo.nights).toFixed(0)}` : '';
+      const filledClass = price !== null ? 'filled' : '';
+      
+      tableHTML += `<tr data-hotel="${hotel.id}" data-key="${key}">
+        <td>${formatDateShort(combo.checkin)}</td>
+        <td>${formatDateShort(combo.checkout)}</td>
+        <td>${combo.nights}</td>
+        <td><input type="number" class="price-input ${filledClass}" placeholder="$0" 
+          value="${price !== null ? price : ''}"
+          onchange="setPrice('${hotel.id}', new Date('${combo.checkin.toISOString()}'), ${combo.nights}, this.value ? parseFloat(this.value) : null); this.classList.toggle('filled', this.value !== '')"
+          ></td>
+        <td class="per-night">${perNight}</td>
+        <td><a href="${url}" target="_blank" class="search-link">Search →</a></td>
+      </tr>`;
+      rowCount++;
+    }
+    
+    tableHTML += '</tbody></table>';
+    body.innerHTML = tableHTML;
+    
+    if (rowCount === 0) continue;
+    
+    section.appendChild(header);
+    section.appendChild(body);
+    container.appendChild(section);
+  }
+  
+  updateBestDeals();
+  updateStats();
+}
+
+function clearAllPrices() {
+  if (!confirm('Clear all saved prices? This cannot be undone.')) return;
+  const keys = Object.keys(localStorage).filter(k => k.startsWith('kauai_'));
+  keys.forEach(k => localStorage.removeItem(k));
+  render();
+}
+
+function exportData() {
+  const combos = generateDateCombos();
+  let csv = 'Hotel,Check-in,Check-out,Nights,Price,Per Night\n';
+  for (const hotel of HOTELS) {
+    for (const combo of combos) {
+      const price = getPrice(hotel.id, combo.checkin, combo.nights);
+      if (price !== null) {
+        csv += `"${hotel.name}",${combo.checkin.toISOString().slice(0,10)},${combo.checkout.toISOString().slice(0,10)},${combo.nights},${price},${(price/combo.nights).toFixed(2)}\n`;
+      }
+    }
+  }
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'kauai-hotel-prices.csv';
+  a.click();
+}
+
+document.getElementById('nightsFilter').addEventListener('change', render);
+document.getElementById('hotelFilter').addEventListener('change', render);
+document.getElementById('showFilter').addEventListener('change', render);
+
+render();
+</script>
+</body>
+</html>
