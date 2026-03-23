@@ -217,48 +217,83 @@ async function doSearch(page, cursor, checkin, checkout) {
 
 function extractAll(text) {
   const results = [];
+  
+  // Split text into hotel blocks by looking for "Kauai: " prefix pattern
+  // Each listing starts with "Kauai: <Hotel Name> Package"
+  const blocks = text.split(/(?=Kauai: )/);
+  
   for (const hotel of TARGET_HOTELS) {
-    // Try main name and aliases
     const names = [hotel, ...(HOTEL_ALIASES[hotel] || [])];
-    let idx = -1;
-    for (const name of names) {
-      idx = text.toLowerCase().indexOf(name.toLowerCase());
-      if (idx !== -1) break;
-    }
-    if (idx === -1) continue;
-    const chunk = text.substring(idx, idx + 2000);
-    let price = null;
-    const totalMatch = chunk.match(/\$([\d,]+\.\d{2})\s*\n\s*Total Price/);
-    if (totalMatch) price = parseFloat(totalMatch[1].replace(/,/g, ''));
-    else {
-      const altMatch = chunk.match(/\$([\d,]+\.\d{2})\s*\n?\s*Total Price includes/);
-      if (altMatch) price = parseFloat(altMatch[1].replace(/,/g, ''));
-      else {
-        const prices = [...chunk.matchAll(/\$([\d,]+\.\d{2})/g)].map(m => parseFloat(m[1].replace(/,/g, ''))).filter(p => p > 500);
-        if (prices.length) price = prices[prices.length - 1];
+    
+    // Find the block that contains this hotel
+    let block = null;
+    for (const b of blocks) {
+      for (const name of names) {
+        if (b.toLowerCase().includes(name.toLowerCase())) {
+          block = b;
+          break;
+        }
       }
+      if (block) break;
     }
+    if (!block) continue;
+    
+    // Total price: "$X,XXX.XX\nTotal Price includes"
+    let price = null;
+    const totalMatch = block.match(/\$([\d,]+\.\d{2})\nTotal Price includes/);
+    if (totalMatch) price = parseFloat(totalMatch[1].replace(/,/g, ''));
+    
+    // Per traveler: "$X,XXX.XX\nPer traveler"
     let perTraveler = null;
-    const ptMatch = chunk.match(/\$([\d,]+\.\d{2})\s*\n\s*Per traveler/);
+    const ptMatch = block.match(/\$([\d,]+\.\d{2})\nPer traveler/);
     if (ptMatch) perTraveler = parseFloat(ptMatch[1].replace(/,/g, ''));
+    
+    // Shop Card: "USD XXX Digital Costco Shop Card"
     let shopCard = null;
-    const scMatch = chunk.match(/USD\s*([\d,]+)\s*Digital Costco Shop Card/i);
+    const scMatch = block.match(/USD\s+([\d,]+)\s+Digital Costco Shop Card/i);
     if (scMatch) shopCard = parseInt(scMatch[1].replace(/,/g, ''));
+    
+    // All included extras between "Included Extras" and "View Details"
     let extras = '';
-    const extrasMatch = chunk.match(/Included Extras\s*\n([\s\S]*?)(?=View Details|Mandatory|$)/);
-    if (extrasMatch) extras = extrasMatch[1].trim().replace(/\n+/g, ' | ');
+    const extrasMatch = block.match(/Included Extras\n([\s\S]*?)View Details/);
+    if (extrasMatch) {
+      extras = extrasMatch[1].trim()
+        .split('\n')
+        .map(l => l.trim())
+        .filter(l => l && l !== '-' && !l.startsWith('Opens'))
+        .join(' | ');
+    }
+    
+    // Resort fee
     let resortFee = '';
-    const feeMatch = chunk.match(/(Mandatory.*?resort fee.*?)(?:\n|View|$)/i);
-    if (feeMatch) resortFee = feeMatch[1].trim();
-    else if (chunk.toLowerCase().includes('resort fee included')) resortFee = 'Resort fee included';
+    if (block.includes('Waived mandatory daily resort fee')) resortFee = 'Waived';
+    else if (block.match(/USD\s+\d+\s+mandatory daily resort fee/)) {
+      const feeMatch = block.match(/USD\s+(\d+)\s+mandatory daily resort fee/);
+      resortFee = feeMatch ? `$${feeMatch[1]}/day included` : 'Included';
+    }
+    else if (block.includes('resort fee included')) resortFee = 'Included';
+    
+    // Package includes
     let packageIncludes = '';
-    const pkgMatch = chunk.match(/Package Includes:(.*?)(?:\n|Options)/);
+    const pkgMatch = block.match(/Package Includes:(.*?)(?:\n|Options)/);
     if (pkgMatch) packageIncludes = pkgMatch[1].trim();
+    
+    // Room type: line after "Reviews)" and before "Map"  
     let roomType = '';
-    const roomMatch = chunk.match(/Reviews\)\s*\n\s*(.*?)\s*\n\s*Map/);
+    const roomMatch = block.match(/Reviews\)\n\n(.*?)\n\nMap/);
     if (roomMatch) roomType = roomMatch[1].trim();
-    const recommended = chunk.includes('COSTCO RECOMMENDS');
-    if (price) results.push({ hotel, price, perTraveler, shopCard, extras, resortFee, packageIncludes, roomType, recommended });
+    
+    // Costco Recommends
+    const recommended = block.includes('COSTCO RECOMMENDS');
+    
+    // Executive member reward
+    let execReward = null;
+    const rewardMatch = block.match(/approximately \$([\d.]+) towards/);
+    if (rewardMatch) execReward = parseFloat(rewardMatch[1]);
+    
+    if (price) {
+      results.push({ hotel, price, perTraveler, shopCard, extras, resortFee, packageIncludes, roomType, recommended, execReward });
+    }
   }
   return results;
 }
