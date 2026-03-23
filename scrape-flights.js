@@ -222,8 +222,10 @@ function parsePrice(priceStr) {
       fs.writeFileSync('flights.json', JSON.stringify(allFlights, null, 2));
     }
     
-    // Rate limit
-    await new Promise(r => setTimeout(r, 3000 + Math.random() * 3000));
+    // Rate limit — 15-30 seconds between searches
+    const delay = 15000 + Math.random() * 15000;
+    console.log(`  (waiting ${Math.round(delay/1000)}s)`);
+    await new Promise(r => setTimeout(r, delay));
   }
   
   // Search return: LIH → DEN
@@ -266,7 +268,9 @@ function parsePrice(priceStr) {
       fs.writeFileSync('flights.json', JSON.stringify(allFlights, null, 2));
     }
     
-    await new Promise(r => setTimeout(r, 3000 + Math.random() * 3000));
+    const delay = 15000 + Math.random() * 15000;
+    console.log(`  (waiting ${Math.round(delay/1000)}s)`);
+    await new Promise(r => setTimeout(r, delay));
   }
   
   // Summary
