@@ -176,6 +176,10 @@ SW_FLIGHTS.forEach(f => {
   if (!cheapestFlight[k] || f.price < cheapestFlight[k].price) cheapestFlight[k] = f;
 });
 
+// Manual flight overrides (must be before recalcFlights)
+const manualFlights = JSON.parse(localStorage.getItem('kauai_manual_flights') || '{}');
+function saveManualFlights() { localStorage.setItem('kauai_manual_flights', JSON.stringify(manualFlights)); }
+
 // Recalculate flight costs for all rows (call after manual changes)
 function recalcFlights() {
   PRICES.forEach(r => {
@@ -365,13 +369,6 @@ function renderFlightTable(flights, label, direction, rowKey, selectedFlight) {
 }
 
 let expandedRow = null;
-// Manual flight overrides: { rowKey: { outbound: flightObj, return: flightObj } }
-const manualFlights = JSON.parse(localStorage.getItem('kauai_manual_flights') || '{}');
-
-function saveManualFlights() {
-  localStorage.setItem('kauai_manual_flights', JSON.stringify(manualFlights));
-}
-
 function getFlightForRow(r) {
   const rowKey = r.hotel + '_' + r.checkin + '_' + r.nights;
   const manual = manualFlights[rowKey];
