@@ -347,6 +347,7 @@ function extractAll(text) {
             });
             let line = `  ✓ ${item.hotel}: $${item.price.toLocaleString()} ($${Math.round(item.price / nights)}/night)`;
             if (item.shopCard) line += ` | $${item.shopCard} Shop Card`;
+            if (item.extras) line += `\n    Extras: ${item.extras}`;
             console.log(line);
           }
           const missing = TARGET_HOTELS.filter(h => !extracted.find(e => e.hotel === h));
