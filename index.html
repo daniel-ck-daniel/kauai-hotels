@@ -214,6 +214,7 @@ const COLUMNS = [
   { key: 'shopCardVal', label: 'Shop Card', sortable: true },
   { key: 'resortCreditVal', label: 'Resort Cred', sortable: true },
   { key: 'breakfastVal', label: 'Bfast Val', sortable: true },
+  { key: 'isManualFlight', label: '✎', sortable: true },
   { key: 'flightTotal', label: 'Flights (2p)', sortable: true },
   { key: 'tripCost', label: 'Trip Cost', sortable: true },
   { key: 'tripValue', label: 'Trip Value', sortable: true },
@@ -421,7 +422,8 @@ function renderTable() {
       <td class="val-cell">${r.shopCardVal ? fmtPrice(r.shopCardVal) : '—'}</td>
       <td class="val-cell">${r.resortCreditVal ? fmtPrice(r.resortCreditVal) : '—'}</td>
       <td class="val-cell">${r.breakfastVal ? fmtPrice(r.breakfastVal) : '—'}</td>
-      <td class="price-cell">${r.flightTotal ? fmtPrice(r.flightTotal) : '—'}${r.isManualFlight ? '<span class="manual-flag">CUSTOM</span>' : ''}</td>
+      <td style="text-align:center">${r.isManualFlight ? '<span class="manual-flag">CUSTOM</span>' : ''}</td>
+      <td class="price-cell">${r.flightTotal ? fmtPrice(r.flightTotal) : '—'}</td>
       <td class="price-cell">${r.tripCost ? fmtPrice(r.tripCost) : '—'}</td>
       <td class="net-cell" style="font-size:0.9em">${r.tripValue ? fmtPrice(r.tripValue) : '—'}</td>
       <td>${tierTag}</td>
