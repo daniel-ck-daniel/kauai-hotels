@@ -6,64 +6,65 @@
 <title>Kauai Trip Planner</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #1a1a2e; color: #d4d4e8; min-height: 100vh; }
-  .header { background: linear-gradient(135deg, #16213e 0%, #1a1a2e 100%); padding: 1.8rem 2.5rem 1.2rem; }
-  .header h1 { font-size: 1.6rem; color: #eee; font-weight: 300; letter-spacing: 0.5px; }
-  .header h1 span { font-weight: 600; }
-  .header p { color: #7f8c9b; font-size: 0.82rem; margin-top: 0.3rem; }
-  .header a { color: #e2b55a; text-decoration: none; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #faf6f0; color: #3a3226; min-height: 100vh; }
+  .header { background: linear-gradient(135deg, #2d4a3e, #1a3328); padding: 1.8rem 2.5rem 1.2rem; }
+  .header h1 { font-size: 1.6rem; color: #fff; font-weight: 300; }
+  .header h1 span { font-weight: 600; color: #e8a547; }
+  .header p { color: #a8c5b8; font-size: 0.82rem; margin-top: 0.3rem; }
+  .header a { color: #e8a547; text-decoration: none; }
   .header a:hover { text-decoration: underline; }
-  .table-wrap { margin: 1.2rem 2.5rem 2rem; overflow-x: auto; border-radius: 8px; border: 1px solid #2a2a4a; }
-  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-  th { background: #16213e; color: #7f8c9b; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.8px; padding: 0.7rem 0.7rem; text-align: left; user-select: none; white-space: nowrap; position: sticky; top: 0; z-index: 2; border-bottom: 2px solid #2a2a4a; }
+  .mono { font-family: 'SF Mono', Consolas, 'Courier New', monospace; }
+  .table-wrap { margin: 1.2rem 2.5rem 2rem; overflow-x: auto; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; background: #fff; }
+  th { background: #2d4a3e; color: #c8ddd2; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.8px; padding: 0.7rem; text-align: left; user-select: none; white-space: nowrap; position: sticky; top: 0; z-index: 2; }
   th .sort-btn { cursor: pointer; transition: color 0.15s; }
-  th .sort-btn:hover { color: #e2b55a; }
-  th .sort-arrow { color: #e2b55a; font-size: 0.7rem; }
-  td { padding: 0.55rem 0.7rem; border-top: 1px solid rgba(255,255,255,0.04); white-space: nowrap; cursor: pointer; transition: background 0.1s; }
-  tr:hover { background: rgba(255,255,255,0.03); }
+  th .sort-btn:hover { color: #e8a547; }
+  th .sort-arrow { color: #e8a547; font-size: 0.7rem; }
+  td { padding: 0.6rem 0.7rem; border-top: 1px solid #f0ebe3; white-space: nowrap; cursor: pointer; transition: background 0.1s; }
+  tr:hover { background: #f8f4ec; }
   tr.expand-row td { cursor: default; padding: 0; }
-  .flight-expand { background: #12121f; padding: 0.8rem 1.2rem; display: flex; gap: 2rem; flex-wrap: wrap; border-top: 1px solid #2a2a4a; }
+  .flight-expand { background: #f5f0e8; padding: 0.8rem 1.2rem; display: flex; gap: 2rem; flex-wrap: wrap; border-top: 2px solid #e0d8cc; }
   .flight-pane { flex: 1; min-width: 280px; }
-  .flight-pane h4 { color: #e2b55a; font-size: 0.72rem; margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 400; }
-  .flight-pane table { font-size: 0.72rem; }
-  .flight-pane th { background: #16213e; font-size: 0.63rem; padding: 0.3rem 0.4rem; position: static; border-bottom: 1px solid #2a2a4a; }
-  .flight-pane td { padding: 0.25rem 0.4rem; border-top: 1px solid rgba(255,255,255,0.03); cursor: default; font-size: 0.72rem; }
-  .flight-pane tr:first-child { background: rgba(226,181,90,0.06); }
-  .flight-pane .f-best { color: #e2b55a; font-weight: 600; }
-  .hotel-koloa { border-left: 3px solid #5b9bd5; }
-  .hotel-hyatt { border-left: 3px solid #e2b55a; }
-  .hotel-hanalei { border-left: 3px solid #b07cd8; }
+  .flight-pane h4 { color: #2d4a3e; font-size: 0.72rem; margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+  .flight-pane table { font-size: 0.75rem; background: #fff; border-radius: 4px; }
+  .flight-pane th { background: #2d4a3e; font-size: 0.63rem; padding: 0.3rem 0.5rem; position: static; }
+  .flight-pane td { padding: 0.3rem 0.5rem; border-top: 1px solid #f0ebe3; cursor: default; font-size: 0.75rem; }
+  .flight-pane tr:first-child { background: #e8f5e9; }
+  .flight-pane .f-best { color: #2e7d32; font-weight: 600; }
+  .hotel-koloa { border-left: 3px solid #4a90b8; }
+  .hotel-hyatt { border-left: 3px solid #e8a547; }
+  .hotel-hanalei { border-left: 3px solid #9b6db5; }
   .hotel-koakea { border-left: 3px solid #d4748a; }
-  .best-koloa { background: rgba(91,155,213,0.08); }
-  .best-hyatt { background: rgba(226,181,90,0.08); }
-  .best-hanalei { background: rgba(176,124,216,0.08); }
-  .best-koakea { background: rgba(212,116,138,0.08); }
+  .best-koloa { background: rgba(74,144,184,0.06); }
+  .best-hyatt { background: rgba(232,165,71,0.06); }
+  .best-hanalei { background: rgba(155,109,181,0.06); }
+  .best-koakea { background: rgba(212,116,138,0.06); }
   .best-koloa td:first-child, .best-hyatt td:first-child, .best-hanalei td:first-child, .best-koakea td:first-child { font-weight: 700; }
-  .price-cell { font-weight: 600; color: #c8c8e0; }
-  .net-cell { font-weight: 700; color: #e2b55a; }
-  .extras-cell { font-size: 0.72rem; color: #7f8c9b; max-width: 280px; white-space: normal; line-height: 1.3; }
-  .shop-card { color: #e2b55a; font-weight: 600; }
-  .tag { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 10px; font-size: 0.65rem; font-weight: 500; letter-spacing: 0.3px; }
-  .tag-cheap { background: rgba(76,175,80,0.15); color: #81c784; }
-  .tag-mid { background: rgba(255,183,77,0.15); color: #ffb74d; }
-  .tag-expensive { background: rgba(229,115,115,0.12); color: #e57373; }
+  .price-cell { font-weight: 600; color: #3a3226; }
+  .net-cell { font-weight: 700; color: #2d4a3e; }
+  .val-cell { color: #7a7060; font-size: 0.78rem; }
+  .extras-cell { font-size: 0.72rem; color: #7a7060; max-width: 280px; white-space: normal; line-height: 1.3; }
+  .shop-card { color: #2d4a3e; font-weight: 600; }
+  .tag { display: inline-block; padding: 0.15rem 0.6rem; border-radius: 12px; font-size: 0.65rem; font-weight: 500; }
+  .tag-cheap { background: #e8f5e9; color: #2e7d32; }
+  .tag-mid { background: #fff3e0; color: #e65100; }
+  .tag-expensive { background: #ffebee; color: #c62828; }
   .trophy { font-size: 0.85rem; }
-  .note { text-align: center; color: #4a4a6a; font-size: 0.75rem; padding: 0 2.5rem 2rem; line-height: 1.6; }
-  .note a { color: #e2b55a; }
-  /* Filter dropdowns */
+  .note { text-align: center; color: #9a9080; font-size: 0.75rem; padding: 0 2.5rem 2rem; line-height: 1.6; }
+  .note a { color: #2d4a3e; }
   .col-filter { position: relative; display: inline-block; margin-left: 4px; }
-  .filter-btn { background: none; border: 1px solid #2a2a4a; color: #7f8c9b; font-size: 0.63rem; padding: 1px 5px; border-radius: 3px; cursor: pointer; transition: all 0.15s; }
-  .filter-btn:hover, .filter-btn.active { border-color: #e2b55a; color: #e2b55a; }
-  .filter-panel { display: none; position: absolute; top: 100%; left: 0; background: #16213e; border: 1px solid #2a2a4a; border-radius: 6px; padding: 0.5rem; z-index: 10; min-width: 150px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+  .filter-btn { background: none; border: 1px solid #4a6a5e; color: #c8ddd2; font-size: 0.63rem; padding: 1px 5px; border-radius: 3px; cursor: pointer; transition: all 0.15s; }
+  .filter-btn:hover, .filter-btn.active { border-color: #e8a547; color: #e8a547; }
+  .filter-panel { display: none; position: absolute; top: 100%; left: 0; background: #fff; border: 1px solid #e0d8cc; border-radius: 6px; padding: 0.5rem; z-index: 10; min-width: 150px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
   .filter-panel.open { display: block; }
-  .filter-panel label { display: block; padding: 0.25rem 0; font-size: 0.78rem; color: #c8c8e0; cursor: pointer; }
-  .filter-panel label:hover { color: #fff; }
-  .filter-panel input[type="checkbox"] { margin-right: 0.4rem; accent-color: #e2b55a; }
-  .filter-actions { display: flex; gap: 0.5rem; margin-top: 0.4rem; padding-top: 0.4rem; border-top: 1px solid #2a2a4a; }
-  .filter-actions button { background: #2a2a4a; border: none; color: #c8c8e0; font-size: 0.72rem; padding: 0.2rem 0.5rem; border-radius: 3px; cursor: pointer; }
-  .filter-actions button:hover { background: #e2b55a; color: #1a1a2e; }
-  .stops-1 { color: #81c784; }
-  .stops-2 { color: #ffb74d; }
+  .filter-panel label { display: block; padding: 0.25rem 0; font-size: 0.78rem; color: #3a3226; cursor: pointer; }
+  .filter-panel label:hover { color: #2d4a3e; }
+  .filter-panel input[type="checkbox"] { margin-right: 0.4rem; accent-color: #2d4a3e; }
+  .filter-actions { display: flex; gap: 0.5rem; margin-top: 0.4rem; padding-top: 0.4rem; border-top: 1px solid #e0d8cc; }
+  .filter-actions button { background: #f0ebe3; border: none; color: #3a3226; font-size: 0.72rem; padding: 0.2rem 0.5rem; border-radius: 3px; cursor: pointer; }
+  .filter-actions button:hover { background: #2d4a3e; color: #fff; }
+  .stops-1 { color: #2e7d32; }
+  .stops-2 { color: #e65100; }
   /* Filter dropdowns in headers */
   .col-filter { position: relative; display: inline-block; margin-left: 4px; }
   .filter-btn { background: none; border: 1px solid #2a3a4a; color: #8aa; font-size: 0.65rem; padding: 1px 4px; border-radius: 3px; cursor: pointer; }
@@ -87,7 +88,7 @@
 
 <div class="header">
   <h1>🌺 Kauai <span>Trip Planner</span></h1>
-  <p>Costco Travel + Southwest · May 15 – June 15, 2026 · Hotel + car + flights for two · <a href="flights.html">✈️ All Flights</a></p>
+  <p>Costco Travel + Southwest · May–Jun 2026 · Hotel + car + flights for two · <a href="flights.html">✈️ All Flights</a> · Click any row to see flight options</p>
 </div>
 
 
@@ -120,18 +121,21 @@ function calcCosts(r) {
   let breakfastValue = 0;
   if ((r.extras || '').toLowerCase().includes('breakfast')) breakfastValue = 50 * r.nights;
   
-  const netCost = r.price - shopCard; // just remove shop card
-  const netValue = r.price - shopCard - resortCredit - breakfastValue; // remove all perks
-  return { netCost, netValue };
+  const netCost = r.price - shopCard;
+  const netValue = r.price - shopCard - resortCredit - breakfastValue;
+  return { netCost, netValue, shopCard, resortCredit, breakfastValue };
 }
 
 const PRICES = RAW_PRICES.map(r => {
-  const { netCost, netValue } = calcCosts(r);
+  const costs = calcCosts(r);
   return { ...r, 
-    netCost: Math.round(netCost * 100) / 100, 
-    netCostPerNight: Math.round(netCost / r.nights),
-    netValue: Math.round(netValue * 100) / 100, 
-    netValuePerNight: Math.round(netValue / r.nights) 
+    netCost: Math.round(costs.netCost * 100) / 100, 
+    netCostPerNight: Math.round(costs.netCost / r.nights),
+    netValue: Math.round(costs.netValue * 100) / 100, 
+    netValuePerNight: Math.round(costs.netValue / r.nights),
+    shopCardVal: costs.shopCard,
+    resortCreditVal: costs.resortCredit,
+    breakfastVal: costs.breakfastValue
   };
 });
 
@@ -150,7 +154,7 @@ const PRICES = RAW_PRICES.map(r => {
 const HOTEL_COLORS = { 'Koloa Landing': 'koloa', 'Grand Hyatt Kauai': 'hyatt', '1 Hotel Hanalei Bay': 'hanalei', 'Koa Kea': 'koakea' };
 const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-function fmtDate(s) { const d = new Date(s + 'T12:00:00'); return `${days[d.getDay()]} ${months[d.getMonth()]} ${d.getDate()}`; }
+function fmtDate(s) { const d = new Date(s + 'T12:00:00'); return `<span class="mono">${days[d.getDay()]} ${months[d.getMonth()]} ${d.getDate()}</span>`; }
 function fmtPrice(p) { return '$' + Math.round(p).toLocaleString('en-US'); }
 
 // Column definitions with filter configs
@@ -197,7 +201,9 @@ const COLUMNS = [
   { key: 'netCost', label: 'Net Cost', sortable: true },
   { key: 'netValue', label: 'Net Value', sortable: true },
   { key: 'netValuePerNight', label: 'Val/Nt', sortable: true },
-  { key: 'shopCard', label: 'Card', sortable: true },
+  { key: 'shopCardVal', label: 'Shop Card', sortable: true },
+  { key: 'resortCreditVal', label: 'Resort Cred', sortable: true },
+  { key: 'breakfastVal', label: 'Bfast Val', sortable: true },
   { key: 'flightTotal', label: 'Flights (2p)', sortable: true },
   { key: 'tripCost', label: 'Trip Cost', sortable: true },
   { key: 'tripValue', label: 'Trip Value', sortable: true },
@@ -351,7 +357,6 @@ function renderTable() {
   tbody.innerHTML = data.map((r, i) => {
     const hc = HOTEL_COLORS[r.hotel] || '';
     const bestClass = r.isBest ? ` best-${hc}` : '';
-    const sc = r.shopCard ? `<span class="shop-card">$${r.shopCard}</span>` : '—';
     const tierTag = r.tier === 'cheap' ? '<span class="tag tag-cheap">Cheapest</span>' :
                     r.tier === 'mid' ? '<span class="tag tag-mid">Middle</span>' :
                     '<span class="tag tag-expensive">Priciest</span>';
@@ -368,7 +373,9 @@ function renderTable() {
       <td class="price-cell">${fmtPrice(r.netCost)}</td>
       <td class="net-cell">${fmtPrice(r.netValue)}</td>
       <td class="net-cell">${fmtPrice(r.netValuePerNight)}/nt</td>
-      <td>${sc}</td>
+      <td class="val-cell">${r.shopCardVal ? fmtPrice(r.shopCardVal) : '—'}</td>
+      <td class="val-cell">${r.resortCreditVal ? fmtPrice(r.resortCreditVal) : '—'}</td>
+      <td class="val-cell">${r.breakfastVal ? fmtPrice(r.breakfastVal) : '—'}</td>
       <td class="price-cell">${r.flightTotal ? fmtPrice(r.flightTotal) : '—'}</td>
       <td class="price-cell">${r.tripCost ? fmtPrice(r.tripCost) : '—'}</td>
       <td class="net-cell" style="font-size:0.9em">${r.tripValue ? fmtPrice(r.tripValue) : '—'}</td>
