@@ -189,12 +189,6 @@ function parsePrice(priceStr) {
     if (result.error) {
       console.log(`  ✗ ${result.error.substring(0, 80)}`);
     } else if (Array.isArray(result)) {
-      // Filter for Southwest
-      const swFlights = result.filter(f => 
-        f.airline && f.airline.toLowerCase().includes('southwest')
-      );
-      const allPriced = result.filter(f => f.price);
-      
       const uniqueFlights = dedupeFlights(result.filter(f => f.price));
       const swFlights = uniqueFlights.filter(f => f.airline && f.airline.toLowerCase().includes('southwest'));
       
