@@ -214,7 +214,6 @@ const COLUMNS = [
   { key: 'shopCardVal', label: 'Shop Card', sortable: true },
   { key: 'resortCreditVal', label: 'Resort Cred', sortable: true },
   { key: 'breakfastVal', label: 'Bfast Val', sortable: true },
-  { key: 'isManualFlight', label: '✎', sortable: true },
   { key: 'flightTotal', label: 'Flights (2p)', sortable: true },
   { key: 'tripCost', label: 'Trip Cost', sortable: true },
   { key: 'tripValue', label: 'Trip Value', sortable: true },
@@ -325,6 +324,11 @@ document.addEventListener('click', (e) => {
 function getFilteredData() {
   return PRICES.filter(r => {
     for (const [col, vals] of Object.entries(filters)) {
+      if (col === '_custom') {
+        if (vals === 'custom' && !r.isManualFlight) return false;
+        if (vals === 'default' && r.isManualFlight) return false;
+        continue;
+      }
       if (vals.size > 0 && !vals.has(String(r[col]))) return false;
     }
     return true;
@@ -422,8 +426,7 @@ function renderTable() {
       <td class="val-cell">${r.shopCardVal ? fmtPrice(r.shopCardVal) : '—'}</td>
       <td class="val-cell">${r.resortCreditVal ? fmtPrice(r.resortCreditVal) : '—'}</td>
       <td class="val-cell">${r.breakfastVal ? fmtPrice(r.breakfastVal) : '—'}</td>
-      <td style="text-align:center">${r.isManualFlight ? '<span class="manual-flag">CUSTOM</span>' : ''}</td>
-      <td class="price-cell">${r.flightTotal ? fmtPrice(r.flightTotal) : '—'}</td>
+      <td class="price-cell">${r.flightTotal ? fmtPrice(r.flightTotal) : '—'}${r.isManualFlight ? ' <span class="manual-flag">✎</span>' : ''}</td>
       <td class="price-cell">${r.tripCost ? fmtPrice(r.tripCost) : '—'}</td>
       <td class="net-cell" style="font-size:0.9em">${r.tripValue ? fmtPrice(r.tripValue) : '—'}</td>
       <td>${tierTag}</td>
@@ -514,6 +517,7 @@ function buildFilterBar() {
     <div><label>Hotel: </label><select id="fHotel"><option value="all">All Hotels</option>${hotels.map(h => `<option value="${h}">${h}</option>`).join('')}</select></div>
     <div><label>Nights: </label><select id="fNights"><option value="all">All</option>${nights.map(n => `<option value="${n}">${n} nights</option>`).join('')}</select></div>
     <div><label>Value: </label><select id="fTier"><option value="all">All</option><option value="cheap">Cheapest</option><option value="mid">Middle</option><option value="expensive">Priciest</option></select></div>
+    <div><label>Custom: </label><select id="fCustom"><option value="all">All</option><option value="custom">Custom only</option><option value="default">Default only</option></select></div>
     <div><label>Sort: </label><select id="fSort">
       <option value="tripValue">Trip Value ↑</option><option value="tripCost">Trip Cost ↑</option>
       <option value="netValue">Net Value ↑</option><option value="price">Hotel Price ↑</option>
@@ -522,18 +526,21 @@ function buildFilterBar() {
     </select></div>
   `;
   
-  ['fHotel','fNights','fTier','fSort'].forEach(id => {
+  ['fHotel','fNights','fTier','fCustom','fSort'].forEach(id => {
     document.getElementById(id).addEventListener('change', () => {
       // Update filters
       const hv = document.getElementById('fHotel').value;
       const nv = document.getElementById('fNights').value;
       const tv = document.getElementById('fTier').value;
       
+      const cv = document.getElementById('fCustom').value;
+      
       // Clear old filters
-      delete filters.hotel; delete filters.nights; delete filters.tier;
+      delete filters.hotel; delete filters.nights; delete filters.tier; delete filters._custom;
       if (hv !== 'all') filters.hotel = new Set([hv]);
       if (nv !== 'all') filters.nights = new Set([nv]);
       if (tv !== 'all') filters.tier = new Set([tv]);
+      if (cv !== 'all') filters._custom = cv;
       
       // Update sort
       const sv = document.getElementById('fSort').value;
