@@ -14,7 +14,7 @@
   .header a { color: #e8a547; text-decoration: none; }
   .header a:hover { text-decoration: underline; }
   .mono { font-family: 'SF Mono', Consolas, 'Courier New', monospace; }
-  .table-wrap { margin: 1.2rem 2.5rem 2rem; overflow-x: auto; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  .table-wrap { margin: 1.2rem 2.5rem 2rem; overflow-x: auto; overflow-y: visible; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
   table { width: 100%; border-collapse: collapse; font-size: 0.82rem; background: #fff; }
   th { background: #2d4a3e; color: #c8ddd2; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.8px; padding: 0.7rem; text-align: left; user-select: none; white-space: nowrap; position: sticky; top: 0; z-index: 2; }
   th .sort-btn { cursor: pointer; transition: color 0.15s; }
@@ -57,10 +57,10 @@
   .trophy { font-size: 0.85rem; }
   .note { text-align: center; color: #9a9080; font-size: 0.75rem; padding: 0 2.5rem 2rem; line-height: 1.6; }
   .note a { color: #2d4a3e; }
-  .col-filter { position: relative; display: inline-block; margin-left: 4px; }
+  .col-filter { position: relative; z-index: 9999; display: inline-block; margin-left: 4px; }
   .filter-btn { background: none; border: 1px solid #4a6a5e; color: #c8ddd2; font-size: 0.63rem; padding: 1px 5px; border-radius: 3px; cursor: pointer; transition: all 0.15s; }
   .filter-btn:hover, .filter-btn.active { border-color: #e8a547; color: #e8a547; }
-  .filter-panel { display: none; position: fixed; background: #fff; border: 1px solid #c0b8ac; border-radius: 8px; padding: 0.6rem 0.7rem; z-index: 9999; min-width: 180px; box-shadow: 0 8px 28px rgba(0,0,0,0.2); }
+  .filter-panel { display: none; position: absolute; top: 100%; right: 0; background: #fff; border: 1px solid #c0b8ac; border-radius: 8px; padding: 0.6rem 0.7rem; z-index: 9999; min-width: 180px; box-shadow: 0 8px 28px rgba(0,0,0,0.2); }
   .filter-panel.open { display: block; }
   .filter-panel label { display: block; padding: 0.25rem 0; font-size: 0.78rem; color: #3a3226; cursor: pointer; }
   .filter-panel label:hover { color: #2d4a3e; }
@@ -71,7 +71,7 @@
   .stops-1 { color: #2e7d32; }
   .stops-2 { color: #e65100; }
   /* Filter dropdowns in headers */
-  .col-filter { position: relative; display: inline-block; margin-left: 4px; }
+  .col-filter { position: relative; z-index: 9999; display: inline-block; margin-left: 4px; }
   .filter-btn { background: none; border: 1px solid #2a3a4a; color: #8aa; font-size: 0.65rem; padding: 1px 4px; border-radius: 3px; cursor: pointer; }
   .filter-btn:hover, .filter-btn.active { border-color: #4a9eff; color: #4a9eff; }
   .filter-panel { display: none; position: absolute; top: 100%; left: 0; background: #1a2a3a; border: 1px solid #2a3a4a; border-radius: 5px; padding: 0.5rem; z-index: 10; min-width: 150px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
@@ -267,13 +267,7 @@ function buildHeaders() {
       const col = btn.dataset.col;
       const panel = document.getElementById('fp-' + col);
       document.querySelectorAll('.filter-panel').forEach(p => { if (p !== panel) p.classList.remove('open'); });
-      if (!panel.classList.contains('open')) {
-        const rect = btn.getBoundingClientRect();
-        panel.style.top = (rect.bottom + 2) + 'px';
-        // Align left edge with button, but don't overflow right side of screen
-        const left = Math.max(8, Math.min(rect.left - 20, window.innerWidth - 200));
-        panel.style.left = left + 'px';
-      }
+      
       panel.classList.toggle('open');
     });
   });
