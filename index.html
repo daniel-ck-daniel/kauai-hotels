@@ -199,6 +199,7 @@ const COLUMNS = [
   { key: 'nights', label: 'N', sortable: true, filterable: true, filterValues: () => [...new Set(PRICES.map(r => r.nights))].sort((a,b)=>a-b) },
   { key: 'price', label: 'Hotel Total', sortable: true },
   { key: 'netCost', label: 'Net Cost', sortable: true },
+  { key: 'netCostPerNight', label: 'Cost/Nt', sortable: true },
   { key: 'netValue', label: 'Net Value', sortable: true },
   { key: 'netValuePerNight', label: 'Val/Nt', sortable: true },
   { key: 'shopCardVal', label: 'Shop Card', sortable: true },
@@ -416,6 +417,7 @@ function renderTable() {
       <td>${r.nights}</td>
       <td class="price-cell">${fmtPrice(r.price)}</td>
       <td class="price-cell">${fmtPrice(r.netCost)}</td>
+      <td class="price-cell">${fmtPrice(r.netCostPerNight)}/nt</td>
       <td class="net-cell">${fmtPrice(r.netValue)}</td>
       <td class="net-cell">${fmtPrice(r.netValuePerNight)}/nt</td>
       <td class="val-cell">${r.shopCardVal ? fmtPrice(r.shopCardVal) : '—'}</td>
