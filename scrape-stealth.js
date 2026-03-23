@@ -176,11 +176,18 @@ async function doSearch(page, cursor, checkin, checkout) {
   }
   if (coDay) { await cursor.moveTo(coDay); await humanDelay(100, 200); await page.mouse.click(coDay.x, coDay.y); await humanDelay(1000, 2000); }
 
-  // Small random scroll before clicking search
-  await randomScroll(page);
-  await humanDelay(500, 1000);
-
   // --- CLICK SEARCH ---
+  // Scroll search button into view first
+  await page.evaluate(() => {
+    for (const b of document.querySelectorAll('button')) {
+      if (b.textContent.trim() === 'Search' && b.offsetParent !== null) {
+        b.scrollIntoView({ block: 'center' });
+        return;
+      }
+    }
+  });
+  await humanDelay(500, 1000);
+  
   const sb = await page.evaluate(() => {
     for (const b of document.querySelectorAll('button')) {
       if (b.textContent.trim() === 'Search' && b.offsetParent !== null) {
