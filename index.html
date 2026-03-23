@@ -26,8 +26,17 @@
   th .sort-btn { cursor: pointer; }
   th .sort-btn:hover { color: #4a9eff; }
   th .sort-arrow { color: #4ade80; font-size: 0.7rem; }
-  td { padding: 0.4rem 0.6rem; border-top: 1px solid #1a2a3a; white-space: nowrap; }
+  td { padding: 0.4rem 0.6rem; border-top: 1px solid #1a2a3a; white-space: nowrap; cursor: pointer; }
   tr:hover { background: #1a2a3a; }
+  tr.expand-row td { cursor: default; padding: 0; }
+  .flight-expand { background: #111820; padding: 0.5rem 1rem; display: flex; gap: 1.5rem; flex-wrap: wrap; }
+  .flight-pane { flex: 1; min-width: 280px; }
+  .flight-pane h4 { color: #4a9eff; font-size: 0.75rem; margin-bottom: 0.3rem; text-transform: uppercase; }
+  .flight-pane table { font-size: 0.72rem; }
+  .flight-pane th { background: #151d28; font-size: 0.65rem; padding: 0.3rem 0.4rem; position: static; }
+  .flight-pane td { padding: 0.25rem 0.4rem; border-top: 1px solid #1a2530; cursor: default; font-size: 0.72rem; }
+  .flight-pane tr:first-child { background: rgba(74,222,128,0.08); }
+  .flight-pane .f-best { color: #4ade80; font-weight: 600; }
   .hotel-koloa { border-left: 3px solid #4a9eff; }
   .hotel-hyatt { border-left: 3px solid #f59e0b; }
   .hotel-hanalei { border-left: 3px solid #a78bfa; }
@@ -308,19 +317,48 @@ function sortData(data) {
   });
 }
 
+// Get all SW flights for a date+direction (deduped, sorted by price)
+function getFlightsForDate(date, direction, maxStops) {
+  const seen = new Set();
+  return SW_FLIGHTS.filter(f => {
+    if (f.date !== date || f.direction !== direction) return false;
+    if (maxStops !== undefined && f.stops > maxStops) return false;
+    const k = f.departure + '|' + f.arrival + '|' + f.price;
+    if (seen.has(k)) return false; seen.add(k); return true;
+  }).sort((a, b) => a.price - b.price);
+}
+
+function renderFlightTable(flights, label) {
+  if (!flights.length) return `<div class="flight-pane"><h4>${label}</h4><p style="color:#666;font-size:0.75rem">No flights found</p></div>`;
+  const best = flights[0].price;
+  return `<div class="flight-pane"><h4>${label} (${flights.length} options)</h4>
+    <table><thead><tr><th>Depart</th><th>Arrive</th><th>Duration</th><th>Stops</th><th>Price</th></tr></thead>
+    <tbody>${flights.map(f => {
+      const cls = f.price === best ? 'f-best' : '';
+      const sc = f.stops <= 1 ? 'stops-1' : 'stops-2';
+      return `<tr><td class="${cls}">${f.departure.split(' on ')[0]}</td><td class="${cls}">${f.arrival.split(' on ')[0]}</td><td>${f.duration}</td><td class="${sc}">${f.stops}</td><td class="${cls}">$${f.price}</td></tr>`;
+    }).join('')}</tbody></table></div>`;
+}
+
+let expandedRow = null;
+
 function renderTable() {
   const data = sortData(getFilteredData());
   const tbody = document.getElementById('tableBody');
-  tbody.innerHTML = data.map(r => {
+  const colCount = COLUMNS.length;
+
+  tbody.innerHTML = data.map((r, i) => {
     const hc = HOTEL_COLORS[r.hotel] || '';
     const bestClass = r.isBest ? ` best-${hc}` : '';
     const sc = r.shopCard ? `<span class="shop-card">$${r.shopCard}</span>` : '—';
-    const extras = (r.extras || '').replace(/\|/g, ' · ').replace(/USD \d+ Digital Costco Shop Card\s*·?\s*/g, '').replace(/^\s*·\s*/, '').trim();
     const tierTag = r.tier === 'cheap' ? '<span class="tag tag-cheap">Cheapest</span>' :
                     r.tier === 'mid' ? '<span class="tag tag-mid">Middle</span>' :
                     '<span class="tag tag-expensive">Priciest</span>';
     const trophy = r.isBest ? '<span class="trophy">🏆</span> ' : '';
-    return `<tr class="hotel-${hc}${bestClass}">
+    const rowKey = r.hotel + '_' + r.checkin + '_' + r.nights;
+    const isExpanded = expandedRow === rowKey;
+
+    let html = `<tr class="hotel-${hc}${bestClass}" data-rowkey="${rowKey}">
       <td>${trophy}${r.hotel}</td>
       <td>${fmtDate(r.checkin)}</td>
       <td>${fmtDate(r.checkout)}</td>
@@ -330,11 +368,33 @@ function renderTable() {
       <td class="net-cell">${fmtPrice(r.netValue)}</td>
       <td class="net-cell">${fmtPrice(r.netValuePerNight)}/nt</td>
       <td>${sc}</td>
-      <td class="price-cell" title="${r.outInfo || ''} + ${r.retInfo || ''}">${r.flightTotal ? fmtPrice(r.flightTotal) : '—'}</td>
+      <td class="price-cell">${r.flightTotal ? fmtPrice(r.flightTotal) : '—'}</td>
       <td class="net-cell" style="font-size:0.9em">${r.tripTotal ? fmtPrice(r.tripTotal) : '—'}</td>
       <td>${tierTag}</td>
     </tr>`;
+
+    if (isExpanded) {
+      const outFlights = getFlightsForDate(r.checkin, 'outbound');
+      const retFlights = getFlightsForDate(r.checkout, 'return');
+      html += `<tr class="expand-row"><td colspan="${colCount}">
+        <div class="flight-expand">
+          ${renderFlightTable(outFlights, '✈️ Outbound DEN→LIH ' + fmtDate(r.checkin))}
+          ${renderFlightTable(retFlights, '✈️ Return LIH→DEN ' + fmtDate(r.checkout))}
+        </div>
+      </td></tr>`;
+    }
+
+    return html;
   }).join('');
+
+  // Click handlers for expand/collapse
+  tbody.querySelectorAll('tr[data-rowkey]').forEach(tr => {
+    tr.addEventListener('click', () => {
+      const key = tr.dataset.rowkey;
+      expandedRow = expandedRow === key ? null : key;
+      renderTable();
+    });
+  });
 }
 
 buildHeaders();
