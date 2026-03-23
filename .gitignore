@@ -1,0 +1,6 @@
+node_modules/
+prices.json
+google-prices.json
+*.png
+debug-*.txt
+package-lock.json
