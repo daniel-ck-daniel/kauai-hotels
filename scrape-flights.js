@@ -107,22 +107,11 @@ except Exception as e:
 }
 
 function searchFlightsPy(date, from_apt, to_apt) {
-  try {
-    const output = execSync(`python flight-search.py ${date} ${from_apt} ${to_apt}`, {
-      timeout: 30000,
-      encoding: 'utf-8',
-      stdio: ['pipe', 'pipe', 'pipe']
-    }).trim();
-    // Find the JSON line (skip any warning lines)
-    const lines = output.split('\n');
-    for (const line of lines.reverse()) {
-      try { return JSON.parse(line); } catch(e) {}
-    }
-    return { error: 'No JSON output' };
-  } catch(e) {
+  const cmds = ['python', 'python3', 'py'];
+  for (const cmd of cmds) {
     try {
-      const output = execSync(`python3 flight-search.py ${date} ${from_apt} ${to_apt}`, {
-        timeout: 30000,
+      const output = execSync(`${cmd} flight-search.py ${date} ${from_apt} ${to_apt}`, {
+        timeout: 45000,
         encoding: 'utf-8',
         stdio: ['pipe', 'pipe', 'pipe']
       }).trim();
@@ -130,11 +119,19 @@ function searchFlightsPy(date, from_apt, to_apt) {
       for (const line of lines.reverse()) {
         try { return JSON.parse(line); } catch(e) {}
       }
-      return { error: 'No JSON output' };
-    } catch(e2) {
-      return { error: e2.message.substring(0, 200) };
-    }
+    } catch(e) { continue; }
   }
+  return { error: 'All python commands failed' };
+}
+
+function dedupeFlights(flights) {
+  const seen = new Set();
+  return flights.filter(f => {
+    const key = `${f.departure}|${f.arrival}|${f.price}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 function parsePrice(priceStr) {
@@ -198,6 +195,9 @@ function parsePrice(priceStr) {
       );
       const allPriced = result.filter(f => f.price);
       
+      const uniqueFlights = dedupeFlights(result.filter(f => f.price));
+      const swFlights = uniqueFlights.filter(f => f.airline && f.airline.toLowerCase().includes('southwest'));
+      
       if (swFlights.length) {
         for (const f of swFlights) {
           const price = parsePrice(f.price);
@@ -209,15 +209,13 @@ function parsePrice(priceStr) {
           console.log(`  ✓ SW: ${f.departure} → ${f.arrival} | ${f.duration} | ${f.stops} stops | ${f.price}`);
         }
       } else {
-        console.log(`  No Southwest flights found (${allPriced.length} total flights)`);
-        // Save cheapest non-SW for reference
-        if (allPriced.length) {
-          const cheapest = allPriced.sort((a, b) => (parsePrice(a.price) || 9999) - (parsePrice(b.price) || 9999))[0];
+        console.log(`  No Southwest flights found (${uniqueFlights.length} unique flights)`);
+        if (uniqueFlights.length) {
+          const cheapest = uniqueFlights.sort((a, b) => (parsePrice(a.price) || 9999) - (parsePrice(b.price) || 9999))[0];
           console.log(`  Cheapest: ${cheapest.airline} ${cheapest.price}`);
         }
       }
       
-      // Mark as done even if no SW flights
       allFlights.push({ date, direction: 'outbound', from: 'DEN', to: 'LIH', airline: '_searched', price: null });
       fs.writeFileSync('flights.json', JSON.stringify(allFlights, null, 2));
     }
@@ -241,10 +239,8 @@ function parsePrice(priceStr) {
     if (result.error) {
       console.log(`  ✗ ${result.error.substring(0, 80)}`);
     } else if (Array.isArray(result)) {
-      const swFlights = result.filter(f => 
-        f.airline && f.airline.toLowerCase().includes('southwest')
-      );
-      const allPriced = result.filter(f => f.price);
+      const uniqueFlights = dedupeFlights(result.filter(f => f.price));
+      const swFlights = uniqueFlights.filter(f => f.airline && f.airline.toLowerCase().includes('southwest'));
       
       if (swFlights.length) {
         for (const f of swFlights) {
@@ -257,9 +253,9 @@ function parsePrice(priceStr) {
           console.log(`  ✓ SW: ${f.departure} → ${f.arrival} | ${f.duration} | ${f.stops} stops | ${f.price}`);
         }
       } else {
-        console.log(`  No Southwest flights found (${allPriced.length} total flights)`);
-        if (allPriced.length) {
-          const cheapest = allPriced.sort((a, b) => (parsePrice(a.price) || 9999) - (parsePrice(b.price) || 9999))[0];
+        console.log(`  No Southwest flights found (${uniqueFlights.length} unique flights)`);
+        if (uniqueFlights.length) {
+          const cheapest = uniqueFlights.sort((a, b) => (parsePrice(a.price) || 9999) - (parsePrice(b.price) || 9999))[0];
           console.log(`  Cheapest: ${cheapest.airline} ${cheapest.price}`);
         }
       }
