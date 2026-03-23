@@ -262,7 +262,12 @@ function extractAll(text) {
   const args = ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--window-size=1920,1080'];
   if (PROXY) { args.push(`--proxy-server=${PROXY}`); console.log(`Using proxy: ${PROXY}`); }
 
-  const browser = await puppeteer.launch({ headless: 'new', executablePath: '/usr/bin/chromium', args });
+  const launchOptions = { headless: 'new', args };
+  // Use system chromium on Linux, bundled browser on Windows/Mac
+  if (process.platform === 'linux' && require('fs').existsSync('/usr/bin/chromium')) {
+    launchOptions.executablePath = '/usr/bin/chromium';
+  }
+  const browser = await puppeteer.launch(launchOptions);
   const page = await browser.newPage();
   await page.setViewport({ width: 1920, height: 1080 });
   const cursor = createCursor(page);
