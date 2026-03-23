@@ -6,57 +6,64 @@
 <title>Kauai Trip Planner</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f1923; color: #e0e0e0; min-height: 100vh; }
-  .header { background: linear-gradient(135deg, #1a2a3a 0%, #0f1923 100%); padding: 1.5rem 2rem; border-bottom: 1px solid #2a3a4a; }
-  .header h1 { font-size: 1.5rem; color: #fff; margin-bottom: 0.2rem; }
-  .header p { color: #8aa; font-size: 0.82rem; }
-  .perks-bar { display: flex; gap: 0.8rem; padding: 0.8rem 2rem; flex-wrap: wrap; }
-  .perk-card { background: #1a2a3a; border: 1px solid #2a3a4a; border-radius: 6px; padding: 0.5rem 0.8rem; flex: 1; min-width: 180px; }
-  .perk-card h3 { font-size: 0.8rem; margin-bottom: 0.25rem; }
-  .perk-card ul { font-size: 0.75rem; color: #aaa; list-style: none; }
-  .perk-card li { margin-bottom: 0.15rem; }
-  .perk-card li::before { content: "✦ "; color: #4ade80; }
-  .pc-koloa h3 { color: #4a9eff; }
-  .pc-koakea h3 { color: #f472b6; }
-  .pc-hyatt h3 { color: #f59e0b; }
-  .pc-hanalei h3 { color: #a78bfa; }
-  .table-wrap { margin: 0.8rem 2rem 2rem; overflow-x: auto; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #1a1a2e; color: #d4d4e8; min-height: 100vh; }
+  .header { background: linear-gradient(135deg, #16213e 0%, #1a1a2e 100%); padding: 1.8rem 2.5rem 1.2rem; }
+  .header h1 { font-size: 1.6rem; color: #eee; font-weight: 300; letter-spacing: 0.5px; }
+  .header h1 span { font-weight: 600; }
+  .header p { color: #7f8c9b; font-size: 0.82rem; margin-top: 0.3rem; }
+  .header a { color: #e2b55a; text-decoration: none; }
+  .header a:hover { text-decoration: underline; }
+  .table-wrap { margin: 1.2rem 2.5rem 2rem; overflow-x: auto; border-radius: 8px; border: 1px solid #2a2a4a; }
   table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-  th { background: #152535; color: #8aa; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; padding: 0.5rem 0.6rem; text-align: left; user-select: none; white-space: nowrap; position: sticky; top: 0; z-index: 2; }
-  th .sort-btn { cursor: pointer; }
-  th .sort-btn:hover { color: #4a9eff; }
-  th .sort-arrow { color: #4ade80; font-size: 0.7rem; }
-  td { padding: 0.4rem 0.6rem; border-top: 1px solid #1a2a3a; white-space: nowrap; cursor: pointer; }
-  tr:hover { background: #1a2a3a; }
+  th { background: #16213e; color: #7f8c9b; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.8px; padding: 0.7rem 0.7rem; text-align: left; user-select: none; white-space: nowrap; position: sticky; top: 0; z-index: 2; border-bottom: 2px solid #2a2a4a; }
+  th .sort-btn { cursor: pointer; transition: color 0.15s; }
+  th .sort-btn:hover { color: #e2b55a; }
+  th .sort-arrow { color: #e2b55a; font-size: 0.7rem; }
+  td { padding: 0.55rem 0.7rem; border-top: 1px solid rgba(255,255,255,0.04); white-space: nowrap; cursor: pointer; transition: background 0.1s; }
+  tr:hover { background: rgba(255,255,255,0.03); }
   tr.expand-row td { cursor: default; padding: 0; }
-  .flight-expand { background: #111820; padding: 0.5rem 1rem; display: flex; gap: 1.5rem; flex-wrap: wrap; }
+  .flight-expand { background: #12121f; padding: 0.8rem 1.2rem; display: flex; gap: 2rem; flex-wrap: wrap; border-top: 1px solid #2a2a4a; }
   .flight-pane { flex: 1; min-width: 280px; }
-  .flight-pane h4 { color: #4a9eff; font-size: 0.75rem; margin-bottom: 0.3rem; text-transform: uppercase; }
+  .flight-pane h4 { color: #e2b55a; font-size: 0.72rem; margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 400; }
   .flight-pane table { font-size: 0.72rem; }
-  .flight-pane th { background: #151d28; font-size: 0.65rem; padding: 0.3rem 0.4rem; position: static; }
-  .flight-pane td { padding: 0.25rem 0.4rem; border-top: 1px solid #1a2530; cursor: default; font-size: 0.72rem; }
-  .flight-pane tr:first-child { background: rgba(74,222,128,0.08); }
-  .flight-pane .f-best { color: #4ade80; font-weight: 600; }
-  .hotel-koloa { border-left: 3px solid #4a9eff; }
-  .hotel-hyatt { border-left: 3px solid #f59e0b; }
-  .hotel-hanalei { border-left: 3px solid #a78bfa; }
-  .hotel-koakea { border-left: 3px solid #f472b6; }
-  .best-koloa { background: rgba(74,158,255,0.12); }
-  .best-hyatt { background: rgba(245,158,11,0.12); }
-  .best-hanalei { background: rgba(167,139,250,0.12); }
-  .best-koakea { background: rgba(244,114,182,0.12); }
+  .flight-pane th { background: #16213e; font-size: 0.63rem; padding: 0.3rem 0.4rem; position: static; border-bottom: 1px solid #2a2a4a; }
+  .flight-pane td { padding: 0.25rem 0.4rem; border-top: 1px solid rgba(255,255,255,0.03); cursor: default; font-size: 0.72rem; }
+  .flight-pane tr:first-child { background: rgba(226,181,90,0.06); }
+  .flight-pane .f-best { color: #e2b55a; font-weight: 600; }
+  .hotel-koloa { border-left: 3px solid #5b9bd5; }
+  .hotel-hyatt { border-left: 3px solid #e2b55a; }
+  .hotel-hanalei { border-left: 3px solid #b07cd8; }
+  .hotel-koakea { border-left: 3px solid #d4748a; }
+  .best-koloa { background: rgba(91,155,213,0.08); }
+  .best-hyatt { background: rgba(226,181,90,0.08); }
+  .best-hanalei { background: rgba(176,124,216,0.08); }
+  .best-koakea { background: rgba(212,116,138,0.08); }
   .best-koloa td:first-child, .best-hyatt td:first-child, .best-hanalei td:first-child, .best-koakea td:first-child { font-weight: 700; }
-  .price-cell { font-weight: 600; }
-  .net-cell { font-weight: 700; color: #4ade80; }
-  .extras-cell { font-size: 0.72rem; color: #8aa; max-width: 280px; white-space: normal; line-height: 1.3; }
-  .shop-card { color: #4ade80; font-weight: 600; }
-  .tag { display: inline-block; padding: 0.1rem 0.4rem; border-radius: 3px; font-size: 0.68rem; font-weight: 600; }
-  .tag-cheap { background: #1a3a2a; color: #4ade80; }
-  .tag-mid { background: #2a2a1a; color: #d4a; }
-  .tag-expensive { background: #3a1a1a; color: #f87171; }
-  .trophy { font-size: 0.9rem; }
-  .note { text-align: center; color: #556; font-size: 0.78rem; padding: 0 2rem 1.5rem; }
-  .note a { color: #4a9eff; }
+  .price-cell { font-weight: 600; color: #c8c8e0; }
+  .net-cell { font-weight: 700; color: #e2b55a; }
+  .extras-cell { font-size: 0.72rem; color: #7f8c9b; max-width: 280px; white-space: normal; line-height: 1.3; }
+  .shop-card { color: #e2b55a; font-weight: 600; }
+  .tag { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 10px; font-size: 0.65rem; font-weight: 500; letter-spacing: 0.3px; }
+  .tag-cheap { background: rgba(76,175,80,0.15); color: #81c784; }
+  .tag-mid { background: rgba(255,183,77,0.15); color: #ffb74d; }
+  .tag-expensive { background: rgba(229,115,115,0.12); color: #e57373; }
+  .trophy { font-size: 0.85rem; }
+  .note { text-align: center; color: #4a4a6a; font-size: 0.75rem; padding: 0 2.5rem 2rem; line-height: 1.6; }
+  .note a { color: #e2b55a; }
+  /* Filter dropdowns */
+  .col-filter { position: relative; display: inline-block; margin-left: 4px; }
+  .filter-btn { background: none; border: 1px solid #2a2a4a; color: #7f8c9b; font-size: 0.63rem; padding: 1px 5px; border-radius: 3px; cursor: pointer; transition: all 0.15s; }
+  .filter-btn:hover, .filter-btn.active { border-color: #e2b55a; color: #e2b55a; }
+  .filter-panel { display: none; position: absolute; top: 100%; left: 0; background: #16213e; border: 1px solid #2a2a4a; border-radius: 6px; padding: 0.5rem; z-index: 10; min-width: 150px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+  .filter-panel.open { display: block; }
+  .filter-panel label { display: block; padding: 0.25rem 0; font-size: 0.78rem; color: #c8c8e0; cursor: pointer; }
+  .filter-panel label:hover { color: #fff; }
+  .filter-panel input[type="checkbox"] { margin-right: 0.4rem; accent-color: #e2b55a; }
+  .filter-actions { display: flex; gap: 0.5rem; margin-top: 0.4rem; padding-top: 0.4rem; border-top: 1px solid #2a2a4a; }
+  .filter-actions button { background: #2a2a4a; border: none; color: #c8c8e0; font-size: 0.72rem; padding: 0.2rem 0.5rem; border-radius: 3px; cursor: pointer; }
+  .filter-actions button:hover { background: #e2b55a; color: #1a1a2e; }
+  .stops-1 { color: #81c784; }
+  .stops-2 { color: #ffb74d; }
   /* Filter dropdowns in headers */
   .col-filter { position: relative; display: inline-block; margin-left: 4px; }
   .filter-btn { background: none; border: 1px solid #2a3a4a; color: #8aa; font-size: 0.65rem; padding: 1px 4px; border-radius: 3px; cursor: pointer; }
@@ -79,20 +86,11 @@
 <body>
 
 <div class="header">
-  <h1>🌺 Kauai Trip Planner</h1>
-  <p>Costco Travel · May 15 – June 15, 2026 · All prices include hotel + rental car package · <a href="flights.html" style="color:#4a9eff">✈️ View Flights</a></p>
+  <h1>🌺 Kauai <span>Trip Planner</span></h1>
+  <p>Costco Travel + Southwest · May 15 – June 15, 2026 · Hotel + car + flights for two · <a href="flights.html">✈️ All Flights</a></p>
 </div>
 
-<div class="perks-bar">
-  <div class="perk-card pc-koloa"><h3>Koloa Landing Resort</h3>
-    <ul><li>Costco Shop Card (varies)</li><li>$250 resort credit per stay</li><li>$40/day resort fee included</li><li>Condo-style · Rental car</li></ul></div>
-  <div class="perk-card pc-koakea"><h3>Koa Kea Hotel & Resort</h3>
-    <ul><li>$150 resort credit per stay</li><li>$50/day resort fee included</li><li>Boutique beachfront</li><li>Rental car included</li></ul></div>
-  <div class="perk-card pc-hyatt"><h3>Grand Hyatt Kauai</h3>
-    <ul><li>Daily buffet breakfast (~$50/day value)</li><li>$100/day resort credit</li><li>Resort fee waived</li><li>Rental car included</li></ul></div>
-  <div class="perk-card pc-hanalei"><h3>1 Hotel Hanalei Bay</h3>
-    <ul><li>Costco Shop Card (varies)</li><li>Resort credit varies by dates</li><li>Resort fee included</li><li>Rental car · COSTCO RECOMMENDS</li></ul></div>
-</div>
+
 
 <div class="table-wrap">
   <table>
@@ -104,7 +102,7 @@
 </div>
 
 <p class="note">
-  Net Cost = Hotel − Shop Card. Net Value = Hotel − Shop Card − Credits − Breakfast ($50/day Hyatt). Flights = cheapest 1-stop SW (1 fare + companion taxes). Trip Total = Net Value + Flights.<br>
+  Net Cost = Hotel − Shop Card. Net Value = Hotel − Shop Card − Credits − Breakfast ($50/day Hyatt). Trip Cost = Net Cost + Flights. Trip Value = Net Value + Flights. Flights = cheapest 1-stop SW for 2 (companion pass).<br>
   Scraped March 23, 2026. <a href="https://www.costcotravel.com/Hotels" target="_blank">Verify on Costco Travel</a> before booking.
 </p>
 
@@ -181,10 +179,12 @@ PRICES.forEach(r => {
   const companionTax = 11.20;
   if (r.outPrice && r.retPrice) {
     r.flightTotal = r.outPrice + r.retPrice + companionTax * 2;
-    r.tripTotal = r.netValue + r.flightTotal;
+    r.tripCost = r.netCost + r.flightTotal;
+    r.tripValue = r.netValue + r.flightTotal;
   } else {
     r.flightTotal = null;
-    r.tripTotal = null;
+    r.tripCost = null;
+    r.tripValue = null;
   }
 });
 
@@ -199,13 +199,14 @@ const COLUMNS = [
   { key: 'netValuePerNight', label: 'Val/Nt', sortable: true },
   { key: 'shopCard', label: 'Card', sortable: true },
   { key: 'flightTotal', label: 'Flights (2p)', sortable: true },
-  { key: 'tripTotal', label: 'Trip Total', sortable: true },
+  { key: 'tripCost', label: 'Trip Cost', sortable: true },
+  { key: 'tripValue', label: 'Trip Value', sortable: true },
   { key: 'tier', label: 'Value', sortable: true, filterable: true, filterValues: () => ['cheap', 'mid', 'expensive'] },
 ];
 
 // Filter state: { columnKey: Set of selected values } — empty set means all
 const filters = {};
-let sortField = 'tripTotal';
+let sortField = 'tripValue';
 let sortDir = 'asc';
 
 function buildHeaders() {
@@ -369,7 +370,8 @@ function renderTable() {
       <td class="net-cell">${fmtPrice(r.netValuePerNight)}/nt</td>
       <td>${sc}</td>
       <td class="price-cell">${r.flightTotal ? fmtPrice(r.flightTotal) : '—'}</td>
-      <td class="net-cell" style="font-size:0.9em">${r.tripTotal ? fmtPrice(r.tripTotal) : '—'}</td>
+      <td class="price-cell">${r.tripCost ? fmtPrice(r.tripCost) : '—'}</td>
+      <td class="net-cell" style="font-size:0.9em">${r.tripValue ? fmtPrice(r.tripValue) : '—'}</td>
       <td>${tierTag}</td>
     </tr>`;
 
