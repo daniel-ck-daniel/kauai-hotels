@@ -271,8 +271,9 @@ function buildHeaders() {
     });
   });
 
-  // Checkbox handlers
+  // Checkbox handlers — keep panel open, just update data
   row.querySelectorAll('.filter-panel input[type="checkbox"]').forEach(cb => {
+    cb.addEventListener('click', (e) => { e.stopPropagation(); });
     cb.addEventListener('change', () => {
       updateFilterFromCheckboxes(cb.dataset.col);
     });
@@ -280,7 +281,8 @@ function buildHeaders() {
 
   // All/None buttons
   row.querySelectorAll('.filter-actions button').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
       const col = btn.dataset.col;
       const action = btn.dataset.action;
       const panel = document.getElementById('fp-' + col);
@@ -299,12 +301,17 @@ function updateFilterFromCheckboxes(col) {
   } else {
     filters[col] = new Set(checked);
   }
-  buildHeaders();
+  // Update filter button active state without rebuilding headers
+  const btn = document.querySelector(`.filter-btn[data-col="${col}"]`);
+  if (btn) {
+    btn.classList.toggle('active', !!filters[col] && filters[col].size > 0);
+  }
   renderTable();
 }
 
 // Close panels on outside click
-document.addEventListener('click', () => {
+document.addEventListener('click', (e) => {
+  if (e.target.closest('.filter-panel') || e.target.closest('.filter-btn')) return;
   document.querySelectorAll('.filter-panel').forEach(p => p.classList.remove('open'));
 });
 
