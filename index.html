@@ -60,7 +60,7 @@
   .col-filter { position: relative; display: inline-block; margin-left: 4px; }
   .filter-btn { background: none; border: 1px solid #4a6a5e; color: #c8ddd2; font-size: 0.63rem; padding: 1px 5px; border-radius: 3px; cursor: pointer; transition: all 0.15s; }
   .filter-btn:hover, .filter-btn.active { border-color: #e8a547; color: #e8a547; }
-  .filter-panel { display: none; position: fixed; background: #fff; border: 1px solid #e0d8cc; border-radius: 6px; padding: 0.5rem; z-index: 100; min-width: 160px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+  .filter-panel { display: none; position: fixed; background: #fff; border: 1px solid #c0b8ac; border-radius: 8px; padding: 0.6rem 0.7rem; z-index: 9999; min-width: 180px; box-shadow: 0 8px 28px rgba(0,0,0,0.2); }
   .filter-panel.open { display: block; }
   .filter-panel label { display: block; padding: 0.25rem 0; font-size: 0.78rem; color: #3a3226; cursor: pointer; }
   .filter-panel label:hover { color: #2d4a3e; }
@@ -269,8 +269,10 @@ function buildHeaders() {
       document.querySelectorAll('.filter-panel').forEach(p => { if (p !== panel) p.classList.remove('open'); });
       if (!panel.classList.contains('open')) {
         const rect = btn.getBoundingClientRect();
-        panel.style.top = (rect.bottom + 4) + 'px';
-        panel.style.left = Math.min(rect.left, window.innerWidth - 180) + 'px';
+        panel.style.top = (rect.bottom + 2) + 'px';
+        // Align left edge with button, but don't overflow right side of screen
+        const left = Math.max(8, Math.min(rect.left - 20, window.innerWidth - 200));
+        panel.style.left = left + 'px';
       }
       panel.classList.toggle('open');
     });
