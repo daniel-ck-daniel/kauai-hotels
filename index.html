@@ -31,6 +31,11 @@
   .flight-pane td { padding: 0.3rem 0.5rem; border-top: 1px solid #f0ebe3; cursor: default; font-size: 0.75rem; }
   .flight-pane tr:first-child { background: #e8f5e9; }
   .flight-pane .f-best { color: #2e7d32; font-weight: 600; }
+  .flight-pane tr { cursor: pointer; }
+  .flight-pane tr:hover { background: #f0ebe3; }
+  .flight-pane tr.f-selected { background: #d4edda !important; }
+  .flight-pane tr.f-selected td { color: #1b5e20; font-weight: 600; }
+  .manual-flag { display: inline-block; background: #e8a547; color: #fff; font-size: 0.58rem; padding: 0.1rem 0.4rem; border-radius: 8px; margin-left: 4px; font-weight: 600; letter-spacing: 0.3px; vertical-align: middle; }
   .hotel-koloa { border-left: 3px solid #4a90b8; }
   .hotel-hyatt { border-left: 3px solid #e8a547; }
   .hotel-hanalei { border-left: 3px solid #9b6db5; }
@@ -171,26 +176,21 @@ SW_FLIGHTS.forEach(f => {
   if (!cheapestFlight[k] || f.price < cheapestFlight[k].price) cheapestFlight[k] = f;
 });
 
-// Enrich hotel data with flight costs
-PRICES.forEach(r => {
-  const outFlight = cheapestFlight[r.checkin + '_outbound'];
-  const retFlight = cheapestFlight[r.checkout + '_return'];
-  r.outPrice = outFlight ? outFlight.price : null;
-  r.retPrice = retFlight ? retFlight.price : null;
-  r.outInfo = outFlight ? outFlight.departure.split(' on ')[0] + ' ' + outFlight.duration : '';
-  r.retInfo = retFlight ? retFlight.departure.split(' on ')[0] + ' ' + retFlight.duration : '';
-  // Flight total for 2 with companion pass: 1 full fare + companion taxes ($11.20 per leg)
-  const companionTax = 11.20;
-  if (r.outPrice && r.retPrice) {
-    r.flightTotal = r.outPrice + r.retPrice + companionTax * 2;
-    r.tripCost = r.netCost + r.flightTotal;
-    r.tripValue = r.netValue + r.flightTotal;
-  } else {
-    r.flightTotal = null;
-    r.tripCost = null;
-    r.tripValue = null;
-  }
-});
+// Recalculate flight costs for all rows (call after manual changes)
+function recalcFlights() {
+  PRICES.forEach(r => {
+    const fl = getFlightForRow(r);
+    r.outPrice = fl.outPrice;
+    r.retPrice = fl.retPrice;
+    r.outInfo = fl.outInfo;
+    r.retInfo = fl.retInfo;
+    r.flightTotal = fl.flightTotal;
+    r.isManualFlight = fl.isManual;
+    r.tripCost = fl.flightTotal ? r.netCost + fl.flightTotal : null;
+    r.tripValue = fl.flightTotal ? r.netValue + fl.flightTotal : null;
+  });
+}
+recalcFlights();
 
 const COLUMNS = [
   { key: 'hotel', label: 'Hotel', sortable: true, filterable: true, filterValues: () => [...new Set(PRICES.map(r => r.hotel))].sort() },
@@ -335,19 +335,52 @@ function getFlightsForDate(date, direction, maxStops) {
   }).sort((a, b) => a.price - b.price);
 }
 
-function renderFlightTable(flights, label) {
-  if (!flights.length) return `<div class="flight-pane"><h4>${label}</h4><p style="color:#666;font-size:0.75rem">No flights found</p></div>`;
+function renderFlightTable(flights, label, direction, rowKey, selectedFlight) {
+  if (!flights.length) return `<div class="flight-pane"><h4>${label}</h4><p style="color:#999;font-size:0.75rem">No flights found</p></div>`;
   const best = flights[0].price;
-  return `<div class="flight-pane"><h4>${label} (${flights.length} options)</h4>
+  const resetBtn = selectedFlight ? ` <button class="flight-reset" data-dir="${direction}" data-rowkey="${rowKey}" style="background:#e0d8cc;border:none;color:#3a3226;font-size:0.6rem;padding:0.15rem 0.4rem;border-radius:3px;cursor:pointer;margin-left:6px">✕ Reset</button>` : '';
+  return `<div class="flight-pane"><h4>${label} (${flights.length})${resetBtn}</h4>
     <table><thead><tr><th>Depart</th><th>Arrive</th><th>Duration</th><th>Stops</th><th>Price</th></tr></thead>
-    <tbody>${flights.map(f => {
-      const cls = f.price === best ? 'f-best' : '';
+    <tbody>${flights.map((f, i) => {
+      const isBest = f.price === best && !selectedFlight;
+      const isSelected = selectedFlight && f.departure === selectedFlight.departure && f.price === selectedFlight.price;
+      const cls = isSelected ? 'f-selected' : isBest ? '' : '';
+      const bestCls = isBest ? 'f-best' : '';
       const sc = f.stops <= 1 ? 'stops-1' : 'stops-2';
-      return `<tr><td class="${cls}">${f.departure.split(' on ')[0]}</td><td class="${cls}">${f.arrival.split(' on ')[0]}</td><td>${f.duration}</td><td class="${sc}">${f.stops}</td><td class="${cls}">$${f.price}</td></tr>`;
+      return `<tr class="${cls}" data-dir="${direction}" data-rowkey="${rowKey}" data-fidx="${i}"><td class="${bestCls}">${f.departure.split(' on ')[0]}</td><td class="${bestCls}">${f.arrival.split(' on ')[0]}</td><td>${f.duration}</td><td class="${sc}">${f.stops}</td><td class="${bestCls}">$${f.price}</td></tr>`;
     }).join('')}</tbody></table></div>`;
 }
 
 let expandedRow = null;
+// Manual flight overrides: { rowKey: { outbound: flightObj, return: flightObj } }
+const manualFlights = JSON.parse(localStorage.getItem('kauai_manual_flights') || '{}');
+
+function saveManualFlights() {
+  localStorage.setItem('kauai_manual_flights', JSON.stringify(manualFlights));
+}
+
+function getFlightForRow(r) {
+  const rowKey = r.hotel + '_' + r.checkin + '_' + r.nights;
+  const manual = manualFlights[rowKey];
+  const companionTax = 11.20;
+  
+  let outFlight = manual?.outbound || cheapestFlight[r.checkin + '_outbound'];
+  let retFlight = manual?.return || cheapestFlight[r.checkout + '_return'];
+  let isManual = !!(manual?.outbound || manual?.return);
+  
+  const outPrice = outFlight?.price || null;
+  const retPrice = retFlight?.price || null;
+  
+  if (outPrice && retPrice) {
+    return {
+      outPrice, retPrice, isManual,
+      outInfo: outFlight ? (outFlight.departure?.split(' on ')[0] || '') + ' ' + (outFlight.duration || '') : '',
+      retInfo: retFlight ? (retFlight.departure?.split(' on ')[0] || '') + ' ' + (retFlight.duration || '') : '',
+      flightTotal: outPrice + retPrice + companionTax * 2
+    };
+  }
+  return { outPrice: null, retPrice: null, isManual: false, outInfo: '', retInfo: '', flightTotal: null };
+}
 
 function renderTable() {
   const data = sortData(getFilteredData());
@@ -376,7 +409,7 @@ function renderTable() {
       <td class="val-cell">${r.shopCardVal ? fmtPrice(r.shopCardVal) : '—'}</td>
       <td class="val-cell">${r.resortCreditVal ? fmtPrice(r.resortCreditVal) : '—'}</td>
       <td class="val-cell">${r.breakfastVal ? fmtPrice(r.breakfastVal) : '—'}</td>
-      <td class="price-cell">${r.flightTotal ? fmtPrice(r.flightTotal) : '—'}</td>
+      <td class="price-cell">${r.flightTotal ? fmtPrice(r.flightTotal) : '—'}${r.isManualFlight ? '<span class="manual-flag">CUSTOM</span>' : ''}</td>
       <td class="price-cell">${r.tripCost ? fmtPrice(r.tripCost) : '—'}</td>
       <td class="net-cell" style="font-size:0.9em">${r.tripValue ? fmtPrice(r.tripValue) : '—'}</td>
       <td>${tierTag}</td>
@@ -385,10 +418,11 @@ function renderTable() {
     if (isExpanded) {
       const outFlights = getFlightsForDate(r.checkin, 'outbound');
       const retFlights = getFlightsForDate(r.checkout, 'return');
+      const manual = manualFlights[rowKey];
       html += `<tr class="expand-row"><td colspan="${colCount}">
         <div class="flight-expand">
-          ${renderFlightTable(outFlights, '✈️ Outbound DEN→LIH ' + fmtDate(r.checkin))}
-          ${renderFlightTable(retFlights, '✈️ Return LIH→DEN ' + fmtDate(r.checkout))}
+          ${renderFlightTable(outFlights, '✈️ Out DEN→LIH ' + fmtDate(r.checkin), 'outbound', rowKey, manual?.outbound)}
+          ${renderFlightTable(retFlights, '✈️ Ret LIH→DEN ' + fmtDate(r.checkout), 'return', rowKey, manual?.return)}
         </div>
       </td></tr>`;
     }
@@ -397,10 +431,60 @@ function renderTable() {
   }).join('');
 
   // Click handlers for expand/collapse
-  tbody.querySelectorAll('tr[data-rowkey]').forEach(tr => {
+  tbody.querySelectorAll('tr[data-rowkey]:not(.expand-row)').forEach(tr => {
+    if (tr.closest('.flight-pane')) return;
     tr.addEventListener('click', () => {
       const key = tr.dataset.rowkey;
       expandedRow = expandedRow === key ? null : key;
+      renderTable();
+    });
+  });
+
+  // Click handlers for flight selection in expanded rows
+  tbody.querySelectorAll('.flight-pane tr[data-fidx]').forEach(tr => {
+    tr.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const dir = tr.dataset.dir;
+      const rowKey = tr.dataset.rowkey;
+      const fidx = parseInt(tr.dataset.fidx);
+      
+      // Find the flight
+      const r = PRICES.find(p => (p.hotel + '_' + p.checkin + '_' + p.nights) === rowKey);
+      if (!r) return;
+      const flights = dir === 'outbound' ? getFlightsForDate(r.checkin, 'outbound') : getFlightsForDate(r.checkout, 'return');
+      const flight = flights[fidx];
+      if (!flight) return;
+      
+      // Store manual override
+      if (!manualFlights[rowKey]) manualFlights[rowKey] = {};
+      const dirKey = dir === 'outbound' ? 'outbound' : 'return';
+      
+      // Toggle: if clicking same flight, deselect
+      if (manualFlights[rowKey][dirKey] && manualFlights[rowKey][dirKey].departure === flight.departure && manualFlights[rowKey][dirKey].price === flight.price) {
+        delete manualFlights[rowKey][dirKey];
+        if (!manualFlights[rowKey].outbound && !manualFlights[rowKey].return) delete manualFlights[rowKey];
+      } else {
+        manualFlights[rowKey][dirKey] = flight;
+      }
+      
+      saveManualFlights();
+      recalcFlights();
+      renderTable();
+    });
+  });
+
+  // Reset buttons
+  tbody.querySelectorAll('.flight-reset').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const dir = btn.dataset.dir;
+      const rowKey = btn.dataset.rowkey;
+      if (manualFlights[rowKey]) {
+        delete manualFlights[rowKey][dir === 'outbound' ? 'outbound' : 'return'];
+        if (!manualFlights[rowKey].outbound && !manualFlights[rowKey].return) delete manualFlights[rowKey];
+      }
+      saveManualFlights();
+      recalcFlights();
       renderTable();
     });
   });
