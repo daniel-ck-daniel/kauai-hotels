@@ -14,11 +14,7 @@
   .header a { color: #e8a547; text-decoration: none; }
   .header a:hover { text-decoration: underline; }
   .mono { font-family: 'SF Mono', Consolas, 'Courier New', monospace; }
-  .filter-bar { display: flex; gap: 1.2rem; padding: 0.8rem 2.5rem; flex-wrap: wrap; align-items: center; background: #f5f0e8; border-bottom: 1px solid #e0d8cc; }
-  .filter-bar label { color: #7a7060; font-size: 0.78rem; font-weight: 500; }
-  .filter-bar select { background: #fff; color: #3a3226; border: 1px solid #d0c8bc; padding: 0.35rem 0.7rem; border-radius: 5px; font-size: 0.82rem; cursor: pointer; }
-  .filter-bar select:hover { border-color: #2d4a3e; }
-  .table-wrap { margin: 1.2rem 2.5rem 2rem; overflow-x: auto; overflow-y: visible; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  .table-wrap { margin: 1.2rem 2.5rem 2rem; overflow: visible; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
   table { width: 100%; border-collapse: collapse; font-size: 0.82rem; background: #fff; }
   th { background: #2d4a3e; color: #c8ddd2; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.8px; padding: 0.7rem; text-align: left; user-select: none; white-space: nowrap; position: sticky; top: 0; z-index: 2; }
   th .sort-btn { cursor: pointer; transition: color 0.15s; }
@@ -61,25 +57,24 @@
   .trophy { font-size: 0.85rem; }
   .note { text-align: center; color: #9a9080; font-size: 0.75rem; padding: 0 2.5rem 2rem; line-height: 1.6; }
   .note a { color: #2d4a3e; }
-  .col-filter { position: relative; z-index: 9999; display: inline-block; margin-left: 4px; }
-  .filter-btn { background: none; border: 1px solid #4a6a5e; color: #c8ddd2; font-size: 0.63rem; padding: 1px 5px; border-radius: 3px; cursor: pointer; transition: all 0.15s; }
+  th { position: relative; overflow: visible; }
+  .col-filter { display: inline-block; margin-left: 3px; position: relative; }
+  .filter-btn { background: none; border: 1px solid #4a6a5e; color: #c8ddd2; font-size: 0.6rem; padding: 1px 4px; border-radius: 3px; cursor: pointer; }
   .filter-btn:hover, .filter-btn.active { border-color: #e8a547; color: #e8a547; }
-  .filter-panel { display: none; position: absolute; top: 100%; right: 0; background: #fff; border: 1px solid #c0b8ac; border-radius: 8px; padding: 0.6rem 0.7rem; z-index: 9999; min-width: 180px; box-shadow: 0 8px 28px rgba(0,0,0,0.2); }
+  .filter-panel { display: none; position: absolute; top: calc(100% + 4px); left: 0; background: #fff; border: 1px solid #c0b8ac; border-radius: 6px; padding: 0.5rem 0.6rem; z-index: 9999; min-width: 170px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); white-space: nowrap; }
   .filter-panel.open { display: block; }
-  .filter-panel label { display: block; padding: 0.25rem 0; font-size: 0.78rem; color: #3a3226; cursor: pointer; }
+  .filter-panel label { display: block; padding: 0.2rem 0; font-size: 0.78rem; color: #3a3226; cursor: pointer; }
   .filter-panel label:hover { color: #2d4a3e; }
   .filter-panel input[type="checkbox"] { margin-right: 0.4rem; accent-color: #2d4a3e; }
-  .filter-actions { display: flex; gap: 0.5rem; margin-top: 0.4rem; padding-top: 0.4rem; border-top: 1px solid #e0d8cc; }
-  .filter-actions button { background: #f0ebe3; border: none; color: #3a3226; font-size: 0.72rem; padding: 0.2rem 0.5rem; border-radius: 3px; cursor: pointer; }
+  .filter-actions { display: flex; gap: 0.5rem; margin-top: 0.3rem; padding-top: 0.3rem; border-top: 1px solid #e0d8cc; }
+  .filter-actions button { background: #f0ebe3; border: none; color: #3a3226; font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 3px; cursor: pointer; }
   .filter-actions button:hover { background: #2d4a3e; color: #fff; }
   .stops-1 { color: #2e7d32; }
   .stops-2 { color: #e65100; }
   /* Filter dropdowns in headers */
-  .col-filter { position: relative; z-index: 9999; display: inline-block; margin-left: 4px; }
   .filter-btn { background: none; border: 1px solid #2a3a4a; color: #8aa; font-size: 0.65rem; padding: 1px 4px; border-radius: 3px; cursor: pointer; }
   .filter-btn:hover, .filter-btn.active { border-color: #4a9eff; color: #4a9eff; }
   .filter-panel { display: none; position: absolute; top: 100%; left: 0; background: #1a2a3a; border: 1px solid #2a3a4a; border-radius: 5px; padding: 0.5rem; z-index: 10; min-width: 150px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
-  .filter-panel.open { display: block; }
   .filter-panel label { display: block; padding: 0.2rem 0; font-size: 0.78rem; color: #ccc; cursor: pointer; white-space: nowrap; }
   .filter-panel label:hover { color: #fff; }
   .filter-panel input[type="checkbox"] { margin-right: 0.4rem; accent-color: #4a9eff; }
@@ -102,7 +97,6 @@
 
 
 
-<div class="filter-bar" id="filterBar"></div>
 <div class="table-wrap">
   <table>
     <thead>
@@ -202,10 +196,10 @@ function recalcFlights() {
 recalcFlights();
 
 const COLUMNS = [
-  { key: 'hotel', label: 'Hotel', sortable: true },
+  { key: 'hotel', label: 'Hotel', sortable: true, filterable: true, filterValues: () => [...new Set(PRICES.map(r => r.hotel))].sort() },
   { key: 'checkin', label: 'Check-in', sortable: true },
   { key: 'checkout', label: 'Check-out', sortable: true },
-  { key: 'nights', label: 'N', sortable: true },
+  { key: 'nights', label: 'N', sortable: true, filterable: true, filterValues: () => [...new Set(PRICES.map(r => r.nights))].sort((a,b)=>a-b) },
   { key: 'price', label: 'Hotel Total', sortable: true },
   { key: 'netCost', label: 'Net Cost', sortable: true },
   { key: 'netCostPerNight', label: 'Cost/Nt', sortable: true },
@@ -217,7 +211,7 @@ const COLUMNS = [
   { key: 'flightTotal', label: 'Flights (2p)', sortable: true },
   { key: 'tripCost', label: 'Trip Cost', sortable: true },
   { key: 'tripValue', label: 'Trip Value', sortable: true },
-  { key: 'tier', label: 'Value', sortable: true },
+  { key: 'tier', label: 'Value', sortable: true, filterable: true, filterValues: () => ['cheap', 'mid', 'expensive'] },
 ];
 
 // Filter state: { columnKey: Set of selected values } — empty set means all
@@ -324,11 +318,6 @@ document.addEventListener('click', (e) => {
 function getFilteredData() {
   return PRICES.filter(r => {
     for (const [col, vals] of Object.entries(filters)) {
-      if (col === '_custom') {
-        if (vals === 'custom' && !r.isManualFlight) return false;
-        if (vals === 'default' && r.isManualFlight) return false;
-        continue;
-      }
       if (vals.size > 0 && !vals.has(String(r[col]))) return false;
     }
     return true;
@@ -508,51 +497,6 @@ function renderTable() {
 }
 
 // Build simple filter bar
-function buildFilterBar() {
-  const bar = document.getElementById('filterBar');
-  const hotels = [...new Set(PRICES.map(r => r.hotel))].sort();
-  const nights = [...new Set(PRICES.map(r => r.nights))].sort((a,b) => a-b);
-  
-  bar.innerHTML = `
-    <div><label>Hotel: </label><select id="fHotel"><option value="all">All Hotels</option>${hotels.map(h => `<option value="${h}">${h}</option>`).join('')}</select></div>
-    <div><label>Nights: </label><select id="fNights"><option value="all">All</option>${nights.map(n => `<option value="${n}">${n} nights</option>`).join('')}</select></div>
-    <div><label>Value: </label><select id="fTier"><option value="all">All</option><option value="cheap">Cheapest</option><option value="mid">Middle</option><option value="expensive">Priciest</option></select></div>
-    <div><label>Custom: </label><select id="fCustom"><option value="all">All</option><option value="custom">Custom only</option><option value="default">Default only</option></select></div>
-    <div><label>Sort: </label><select id="fSort">
-      <option value="tripValue">Trip Value ↑</option><option value="tripCost">Trip Cost ↑</option>
-      <option value="netValue">Net Value ↑</option><option value="price">Hotel Price ↑</option>
-      <option value="netValuePerNight">Val/Nt ↑</option><option value="checkin">Check-in Date</option>
-      <option value="hotel">Hotel Name</option>
-    </select></div>
-  `;
-  
-  ['fHotel','fNights','fTier','fCustom','fSort'].forEach(id => {
-    document.getElementById(id).addEventListener('change', () => {
-      // Update filters
-      const hv = document.getElementById('fHotel').value;
-      const nv = document.getElementById('fNights').value;
-      const tv = document.getElementById('fTier').value;
-      
-      const cv = document.getElementById('fCustom').value;
-      
-      // Clear old filters
-      delete filters.hotel; delete filters.nights; delete filters.tier; delete filters._custom;
-      if (hv !== 'all') filters.hotel = new Set([hv]);
-      if (nv !== 'all') filters.nights = new Set([nv]);
-      if (tv !== 'all') filters.tier = new Set([tv]);
-      if (cv !== 'all') filters._custom = cv;
-      
-      // Update sort
-      const sv = document.getElementById('fSort').value;
-      sortField = sv;
-      sortDir = 'asc';
-      
-      renderTable();
-    });
-  });
-}
-
-buildFilterBar();
 buildHeaders();
 renderTable();
 </script>
