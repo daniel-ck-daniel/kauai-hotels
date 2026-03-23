@@ -7,7 +7,7 @@ const fs = require('fs');
 const TARGET_HOTELS = ['Koloa Landing', 'Koa Kea', 'Grand Hyatt Kauai', '1 Hotel Hanalei Bay'];
 // Alternate names to search for in results text
 const HOTEL_ALIASES = {
-  'Koa Kea': ["Koa Kea", "Ko'a Kea", "Ko a Kea", "Koa'Kea"]
+  'Koa Kea': ["Koa Kea", "Ko`a Kea", "Ko'a Kea", "Ko a Kea", "Koa'Kea"]
 };
 const START = new Date(2026, 4, 15);
 const END = new Date(2026, 5, 15);
