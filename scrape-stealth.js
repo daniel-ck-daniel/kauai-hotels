@@ -262,7 +262,8 @@ function extractAll(text) {
   const args = ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--window-size=1920,1080'];
   if (PROXY) { args.push(`--proxy-server=${PROXY}`); console.log(`Using proxy: ${PROXY}`); }
 
-  const launchOptions = { headless: 'new', args };
+  const DEBUG = process.env.DEBUG === '1' || process.argv.includes('--debug');
+  const launchOptions = { headless: DEBUG ? false : 'new', args };
   // Use system chromium on Linux, bundled browser on Windows/Mac
   if (process.platform === 'linux' && require('fs').existsSync('/usr/bin/chromium')) {
     launchOptions.executablePath = '/usr/bin/chromium';
