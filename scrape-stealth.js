@@ -310,10 +310,23 @@ function extractAll(text) {
   if (process.platform === 'linux' && require('fs').existsSync('/usr/bin/chromium')) {
     launchOptions.executablePath = '/usr/bin/chromium';
   }
-  const browser = await puppeteer.launch(launchOptions);
-  const page = await browser.newPage();
+  const BATCH_SIZE = 18; // Restart browser every 18 searches to avoid Akamai session flagging
+  let browser = await puppeteer.launch(launchOptions);
+  let page = await browser.newPage();
   await page.setViewport({ width: 1920, height: 1080 });
-  const cursor = createCursor(page);
+  let cursor = createCursor(page);
+  let searchesSinceBrowserRestart = 0;
+
+  async function restartBrowser() {
+    console.log('  🔄 Restarting browser for fresh session...');
+    try { await browser.close(); } catch(e) {}
+    await new Promise(r => setTimeout(r, 10000)); // 10s cooldown
+    browser = await puppeteer.launch(launchOptions);
+    page = await browser.newPage();
+    await page.setViewport({ width: 1920, height: 1080 });
+    cursor = createCursor(page);
+    searchesSinceBrowserRestart = 0;
+  }
 
   let allResults = [];
   try { allResults = JSON.parse(fs.readFileSync('prices.json', 'utf-8')); } catch (e) {}
@@ -362,6 +375,11 @@ function extractAll(text) {
       if (!success) {
         consecutiveFails++;
         if (consecutiveFails >= 5) { console.log(`\n5 consecutive failures after ${totalSuccess} successful searches. Stopping.`); break; }
+      }
+
+      searchesSinceBrowserRestart++;
+      if (searchesSinceBrowserRestart >= BATCH_SIZE) {
+        await restartBrowser();
       }
 
       const delay = randomDelay();
