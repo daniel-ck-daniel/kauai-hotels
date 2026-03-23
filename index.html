@@ -14,6 +14,10 @@
   .header a { color: #e8a547; text-decoration: none; }
   .header a:hover { text-decoration: underline; }
   .mono { font-family: 'SF Mono', Consolas, 'Courier New', monospace; }
+  .filter-bar { display: flex; gap: 1.2rem; padding: 0.8rem 2.5rem; flex-wrap: wrap; align-items: center; background: #f5f0e8; border-bottom: 1px solid #e0d8cc; }
+  .filter-bar label { color: #7a7060; font-size: 0.78rem; font-weight: 500; }
+  .filter-bar select { background: #fff; color: #3a3226; border: 1px solid #d0c8bc; padding: 0.35rem 0.7rem; border-radius: 5px; font-size: 0.82rem; cursor: pointer; }
+  .filter-bar select:hover { border-color: #2d4a3e; }
   .table-wrap { margin: 1.2rem 2.5rem 2rem; overflow-x: auto; overflow-y: visible; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
   table { width: 100%; border-collapse: collapse; font-size: 0.82rem; background: #fff; }
   th { background: #2d4a3e; color: #c8ddd2; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.8px; padding: 0.7rem; text-align: left; user-select: none; white-space: nowrap; position: sticky; top: 0; z-index: 2; }
@@ -98,6 +102,7 @@
 
 
 
+<div class="filter-bar" id="filterBar"></div>
 <div class="table-wrap">
   <table>
     <thead>
@@ -197,10 +202,10 @@ function recalcFlights() {
 recalcFlights();
 
 const COLUMNS = [
-  { key: 'hotel', label: 'Hotel', sortable: true, filterable: true, filterValues: () => [...new Set(PRICES.map(r => r.hotel))].sort() },
+  { key: 'hotel', label: 'Hotel', sortable: true },
   { key: 'checkin', label: 'Check-in', sortable: true },
   { key: 'checkout', label: 'Check-out', sortable: true },
-  { key: 'nights', label: 'N', sortable: true, filterable: true, filterValues: () => [...new Set(PRICES.map(r => r.nights))].sort((a,b)=>a-b) },
+  { key: 'nights', label: 'N', sortable: true },
   { key: 'price', label: 'Hotel Total', sortable: true },
   { key: 'netCost', label: 'Net Cost', sortable: true },
   { key: 'netCostPerNight', label: 'Cost/Nt', sortable: true },
@@ -212,7 +217,7 @@ const COLUMNS = [
   { key: 'flightTotal', label: 'Flights (2p)', sortable: true },
   { key: 'tripCost', label: 'Trip Cost', sortable: true },
   { key: 'tripValue', label: 'Trip Value', sortable: true },
-  { key: 'tier', label: 'Value', sortable: true, filterable: true, filterValues: () => ['cheap', 'mid', 'expensive'] },
+  { key: 'tier', label: 'Value', sortable: true },
 ];
 
 // Filter state: { columnKey: Set of selected values } — empty set means all
@@ -497,6 +502,48 @@ function renderTable() {
   });
 }
 
+// Build simple filter bar
+function buildFilterBar() {
+  const bar = document.getElementById('filterBar');
+  const hotels = [...new Set(PRICES.map(r => r.hotel))].sort();
+  const nights = [...new Set(PRICES.map(r => r.nights))].sort((a,b) => a-b);
+  
+  bar.innerHTML = `
+    <div><label>Hotel: </label><select id="fHotel"><option value="all">All Hotels</option>${hotels.map(h => `<option value="${h}">${h}</option>`).join('')}</select></div>
+    <div><label>Nights: </label><select id="fNights"><option value="all">All</option>${nights.map(n => `<option value="${n}">${n} nights</option>`).join('')}</select></div>
+    <div><label>Value: </label><select id="fTier"><option value="all">All</option><option value="cheap">Cheapest</option><option value="mid">Middle</option><option value="expensive">Priciest</option></select></div>
+    <div><label>Sort: </label><select id="fSort">
+      <option value="tripValue">Trip Value ↑</option><option value="tripCost">Trip Cost ↑</option>
+      <option value="netValue">Net Value ↑</option><option value="price">Hotel Price ↑</option>
+      <option value="netValuePerNight">Val/Nt ↑</option><option value="checkin">Check-in Date</option>
+      <option value="hotel">Hotel Name</option>
+    </select></div>
+  `;
+  
+  ['fHotel','fNights','fTier','fSort'].forEach(id => {
+    document.getElementById(id).addEventListener('change', () => {
+      // Update filters
+      const hv = document.getElementById('fHotel').value;
+      const nv = document.getElementById('fNights').value;
+      const tv = document.getElementById('fTier').value;
+      
+      // Clear old filters
+      delete filters.hotel; delete filters.nights; delete filters.tier;
+      if (hv !== 'all') filters.hotel = new Set([hv]);
+      if (nv !== 'all') filters.nights = new Set([nv]);
+      if (tv !== 'all') filters.tier = new Set([tv]);
+      
+      // Update sort
+      const sv = document.getElementById('fSort').value;
+      sortField = sv;
+      sortDir = 'asc';
+      
+      renderTable();
+    });
+  });
+}
+
+buildFilterBar();
 buildHeaders();
 renderTable();
 </script>
