@@ -210,7 +210,9 @@ function parsePrice(priceStr) {
         }
       }
       
-      allFlights.push({ date, direction: 'outbound', from: 'DEN', to: 'LIH', airline: '_searched', price: null });
+      if (swFlights.length) {
+        allFlights.push({ date, direction: 'outbound', from: 'DEN', to: 'LIH', airline: '_searched', price: null });
+      }
       fs.writeFileSync('flights.json', JSON.stringify(allFlights, null, 2));
     }
     
@@ -254,7 +256,9 @@ function parsePrice(priceStr) {
         }
       }
       
-      allFlights.push({ date, direction: 'return', from: 'LIH', to: 'DEN', airline: '_searched', price: null });
+      if (swFlights.length) {
+        allFlights.push({ date, direction: 'return', from: 'LIH', to: 'DEN', airline: '_searched', price: null });
+      }
       fs.writeFileSync('flights.json', JSON.stringify(allFlights, null, 2));
     }
     
