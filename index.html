@@ -179,6 +179,23 @@ SW_FLIGHTS.forEach(f => {
 const manualFlights = JSON.parse(localStorage.getItem('kauai_manual_flights') || '{}');
 function saveManualFlights() { localStorage.setItem('kauai_manual_flights', JSON.stringify(manualFlights)); }
 
+// Calculate PTO days needed (business days from checkin through day after checkout)
+function calcPTO(checkin, checkout) {
+  const start = new Date(checkin + 'T12:00:00');
+  const end = new Date(checkout + 'T12:00:00');
+  end.setDate(end.getDate() + 1); // day after checkout
+  let pto = 0;
+  const d = new Date(start);
+  while (d <= end) {
+    const day = d.getDay();
+    if (day >= 1 && day <= 5) pto++; // Mon=1 through Fri=5
+    d.setDate(d.getDate() + 1);
+  }
+  return pto;
+}
+
+PRICES.forEach(r => { r.ptoDays = calcPTO(r.checkin, r.checkout); });
+
 // Recalculate flight costs for all rows (call after manual changes)
 function recalcFlights() {
   PRICES.forEach(r => {
@@ -208,6 +225,7 @@ const COLUMNS = [
   { key: 'shopCardVal', label: 'Shop Card', sortable: true },
   { key: 'resortCreditVal', label: 'Resort Cred', sortable: true },
   { key: 'breakfastVal', label: 'Bfast Val', sortable: true },
+  { key: 'ptoDays', label: 'PTO', sortable: true, filterable: true, filterValues: () => [...new Set(PRICES.map(r => r.ptoDays))].sort((a,b)=>a-b) },
   { key: 'isManualFlight', label: 'Custom', sortable: true, filterable: true, filterValues: () => ['true', 'false'] },
   { key: 'flightTotal', label: 'Flights (2p)', sortable: true },
   { key: 'tripCost', label: 'Trip Cost', sortable: true },
@@ -416,6 +434,7 @@ function renderTable() {
       <td class="val-cell">${r.shopCardVal ? fmtPrice(r.shopCardVal) : '—'}</td>
       <td class="val-cell">${r.resortCreditVal ? fmtPrice(r.resortCreditVal) : '—'}</td>
       <td class="val-cell">${r.breakfastVal ? fmtPrice(r.breakfastVal) : '—'}</td>
+      <td style="text-align:center">${r.ptoDays}</td>
       <td style="text-align:center">${r.isManualFlight ? '<span class="manual-flag">✎ YES</span>' : ''}</td>
       <td class="price-cell">${r.flightTotal ? fmtPrice(r.flightTotal) : '—'}</td>
       <td class="price-cell">${r.tripCost ? fmtPrice(r.tripCost) : '—'}</td>
